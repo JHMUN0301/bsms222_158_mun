@@ -429,7 +429,6 @@ sum(x)</code></pre>
 <ol start="5" style="list-style-type: decimal">
 <li>Which of the following will always return the numeric value stored in x? You can try out examples and use the help system if you want.</li>
 </ol>
-<p>-&gt; my prediction: “a”</p>
 <p>(attempts)</p>
 <pre class="r"><code>x &lt;- 123
 
@@ -694,11 +693,8 @@ a</code></pre>
 ## [31] &quot;NJ&quot; &quot;NM&quot; &quot;NY&quot; &quot;NC&quot; &quot;ND&quot; &quot;OH&quot; &quot;OK&quot; &quot;OR&quot; &quot;PA&quot; &quot;RI&quot; &quot;SC&quot; &quot;SD&quot; &quot;TN&quot; &quot;TX&quot; &quot;UT&quot;
 ## [46] &quot;VT&quot; &quot;VA&quot; &quot;WA&quot; &quot;WV&quot; &quot;WI&quot; &quot;WY&quot;</code></pre>
 <pre class="r"><code>b &lt;- murders[, 2]
-a == b</code></pre>
-<pre><code>##  [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-## [16] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-## [31] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-## [46] TRUE TRUE TRUE TRUE TRUE TRUE</code></pre>
+identical(a,b)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
 <ol start="5" style="list-style-type: decimal">
 <li>We saw that the region column stores a factor. You can corroborate this by typing:</li>
 </ol>
@@ -800,6 +796,436 @@ codes</code></pre>
 <pre><code>## egypt italy 
 ##   818   380</code></pre>
 </div>
+</div>
+<div id="coercion" class="section level2">
+<h2>2.7 Coercion</h2>
+<p>In general, coercion is an attempt by R to be flexible with data types. When an entry does not match the expected, some of the prebuilt R functions try to guess what was meant before throwing an error. This can also lead to confusion. Failing to understand coercion can drive programmers crazy when attempting to code in R since it behaves quite differently from most other languages in this regard. Let’s learn about it with some examples.</p>
+<p>We said that vectors must be all of the same type. So if we try to combine, say, numbers and characters, you might expect an error:</p>
+<pre class="r"><code>x &lt;- c(1, &quot;canada&quot;, 3)</code></pre>
+<p>But we don’t get one, not even a warning! What happened? Look at x and its class:</p>
+<pre class="r"><code>x</code></pre>
+<pre><code>## [1] &quot;1&quot;      &quot;canada&quot; &quot;3&quot;</code></pre>
+<pre class="r"><code>class(x)</code></pre>
+<pre><code>## [1] &quot;character&quot;</code></pre>
+<p>R coerced the data into characters. It guessed that because you put a character string in the vector, you meant the 1 and 3 to actually be character strings “1” and “3.” The fact that not even a warning is issued is an example of how coercion can cause many unnoticed errors in R.</p>
+<p>R also offers functions to change from one type to another. For example, you can turn numbers into characters with:</p>
+<pre class="r"><code>x &lt;- 1:5
+y &lt;- as.character(x)
+y</code></pre>
+<pre><code>## [1] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; &quot;5&quot;</code></pre>
+<p>You can turn it back with as.numeric:</p>
+<pre class="r"><code>as.numeric(y)</code></pre>
+<pre><code>## [1] 1 2 3 4 5</code></pre>
+<p>This function is actually quite useful since datasets that include numbers as character strings are common.</p>
+<div id="not-availables-na" class="section level3">
+<h3>2.7.1 Not availables (NA)</h3>
+<p>When a function tries to coerce one type to another and encounters an impossible case, it usually gives us a warning and turns the entry into a special value called an NA for “not available.” For example:</p>
+<pre class="r"><code>x &lt;- c(&quot;1&quot;, &quot;b&quot;, &quot;3&quot;)
+as.numeric(x)</code></pre>
+<pre><code>## Warning: 강제형변환에 의해 생성된 NA 입니다</code></pre>
+<pre><code>## [1]  1 NA  3</code></pre>
+<p>R does not have any guesses for what number you want when you type b, so it does not try.</p>
+<p>As a data scientist you will encounter the NAs often as they are generally used for missing data, a common problem in real-world datasets.</p>
+</div>
+</div>
+<div id="exercises-2" class="section level2">
+<h2>2.8 Exercises</h2>
+<ol style="list-style-type: decimal">
+<li>Use the function c to create a vector with the average high temperatures in January for Beijing, Lagos, Paris, Rio de Janeiro, San Juan, and Toronto, which are 35, 88, 42, 84, 81, and 30 degrees Fahrenheit. Call the object temp.</li>
+</ol>
+<pre class="r"><code>temp &lt;- c(35, 88, 42, 84, 81, 30)</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>Now create a vector with the city names and call the object city.</li>
+</ol>
+<pre class="r"><code>city &lt;- c(&quot;Beijing&quot;, &quot;Lagos&quot;, &quot;Paris&quot;, &quot;Rio de Janeiro&quot;, &quot;San Juan&quot;, &quot;Toronto&quot;)</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>Use the names function and the objects defined in the previous exercises to associate the temperature data with its corresponding city.</li>
+</ol>
+<pre class="r"><code>names(temp) &lt;- city
+temp</code></pre>
+<pre><code>##        Beijing          Lagos          Paris Rio de Janeiro       San Juan 
+##             35             88             42             84             81 
+##        Toronto 
+##             30</code></pre>
+<ol start="4" style="list-style-type: decimal">
+<li>Use the [ and : operators to access the temperature of the first three cities on the list.</li>
+</ol>
+<pre class="r"><code>temp[1:3]</code></pre>
+<pre><code>## Beijing   Lagos   Paris 
+##      35      88      42</code></pre>
+<ol start="5" style="list-style-type: decimal">
+<li>Use the [ operator to access the temperature of Paris and San Juan.</li>
+</ol>
+<pre class="r"><code>temp[c(&quot;Paris&quot;, &quot;San Juan&quot;)]</code></pre>
+<pre><code>##    Paris San Juan 
+##       42       81</code></pre>
+<ol start="6" style="list-style-type: decimal">
+<li>Use the : operator to create a sequence of numbers<br />
+<span class="math inline">\(12\)</span>, <span class="math inline">\(13\)</span>, <span class="math inline">\(14\)</span>,…, <span class="math inline">\(73\)</span>.</li>
+</ol>
+<pre class="r"><code>12:73</code></pre>
+<pre><code>##  [1] 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36
+## [26] 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61
+## [51] 62 63 64 65 66 67 68 69 70 71 72 73</code></pre>
+<ol start="7" style="list-style-type: decimal">
+<li>Create a vector containing all the positive odd numbers smaller than 100.</li>
+</ol>
+<pre class="r"><code>c(seq(1, 100, 2))</code></pre>
+<pre><code>##  [1]  1  3  5  7  9 11 13 15 17 19 21 23 25 27 29 31 33 35 37 39 41 43 45 47 49
+## [26] 51 53 55 57 59 61 63 65 67 69 71 73 75 77 79 81 83 85 87 89 91 93 95 97 99</code></pre>
+<ol start="8" style="list-style-type: decimal">
+<li>Create a vector of numbers that starts at 6, does not pass 55, and adds numbers in increments of 4/7: 6, 6 + 4/7, 6 + 8/7, and so on. How many numbers does the list have? Hint: use seq and length.</li>
+</ol>
+<pre class="r"><code>length(c(seq(6, 55, 4/7)))</code></pre>
+<pre><code>## [1] 86</code></pre>
+<ol start="9" style="list-style-type: decimal">
+<li>What is the class of the following object a &lt;- seq(1, 10, 0.5)?</li>
+</ol>
+<pre class="r"><code>a &lt;- seq(1, 10, 0.5)
+class(a)</code></pre>
+<pre><code>## [1] &quot;numeric&quot;</code></pre>
+<ol start="10" style="list-style-type: decimal">
+<li>What is the class of the following object a &lt;- seq(1, 10)?</li>
+</ol>
+<pre class="r"><code>a &lt;- seq(1,10)
+class(a)</code></pre>
+<pre><code>## [1] &quot;integer&quot;</code></pre>
+<ol start="11" style="list-style-type: decimal">
+<li>The class of class(a&lt;-1) is numeric, not integer. R defaults to numeric and to force an integer, you need to add the letter L. Confirm that the class of 1L is integer.</li>
+</ol>
+<pre class="r"><code>class(1L)</code></pre>
+<pre><code>## [1] &quot;integer&quot;</code></pre>
+<ol start="12" style="list-style-type: decimal">
+<li>Define the following vector:</li>
+</ol>
+<pre class="r"><code>x &lt;- c(&quot;1&quot;, &quot;3&quot;, &quot;5&quot;)</code></pre>
+<p>and coerce it to get integers.</p>
+<pre class="r"><code>as.integer(x)</code></pre>
+<pre><code>## [1] 1 3 5</code></pre>
+</div>
+<div id="sorting" class="section level2">
+<h2>2.9 Sorting</h2>
+<p>Now that we have mastered some basic R knowledge, let’s try to gain some insights into the safety of different states in the context of gun murders.</p>
+<div id="sort" class="section level3">
+<h3>2.9.1 sort</h3>
+<p>Say we want to rank the states from least to most gun murders. The function sort sorts a vector in increasing order. We can therefore see the largest number of gun murders by typing:</p>
+<pre class="r"><code>library(dslabs)
+data(murders)
+sort(murders$total)</code></pre>
+<pre><code>##  [1]    2    4    5    5    7    8   11   12   12   16   19   21   22   27   32
+## [16]   36   38   53   63   65   67   84   93   93   97   97   99  111  116  118
+## [31]  120  135  142  207  219  232  246  250  286  293  310  321  351  364  376
+## [46]  413  457  517  669  805 1257</code></pre>
+<p>However, this does not give us information about which states have which murder totals. For example, we don’t know which state had 1257.</p>
+</div>
+<div id="order" class="section level3">
+<h3>2.9.2 order</h3>
+<p>The function order is closer to what we want. It takes a vector as input and returns the vector of indexes that sorts the input vector. This may sound confusing so let’s look at a simple example. We can create a vector and sort it:</p>
+<pre class="r"><code>x &lt;- c(31, 4, 15, 92, 65)
+sort(x)</code></pre>
+<pre><code>## [1]  4 15 31 65 92</code></pre>
+<p>Rather than sort the input vector, the function order returns the index that sorts input vector:</p>
+<pre class="r"><code>index &lt;- order(x)
+x[index]</code></pre>
+<pre><code>## [1]  4 15 31 65 92</code></pre>
+<p>This is the same output as that returned by sort(x). If we look at this index, we see why it works:</p>
+<pre class="r"><code>x</code></pre>
+<pre><code>## [1] 31  4 15 92 65</code></pre>
+<pre class="r"><code>order(x)</code></pre>
+<pre><code>## [1] 2 3 1 5 4</code></pre>
+<p>The second entry of x is the smallest, so order(x) starts with 2. The next smallest is the third entry, so the second entry is 3 and so on.</p>
+<p>How does this help us order the states by murders? First, remember that the entries of vectors you access with $ follow the same order as the rows in the table. For example, these two vectors containing state names and abbreviations, respectively, are matched by their order:</p>
+<pre class="r"><code>murders$state[1:6]</code></pre>
+<pre><code>## [1] &quot;Alabama&quot;    &quot;Alaska&quot;     &quot;Arizona&quot;    &quot;Arkansas&quot;   &quot;California&quot;
+## [6] &quot;Colorado&quot;</code></pre>
+<pre class="r"><code>murders$abb[1:6]</code></pre>
+<pre><code>## [1] &quot;AL&quot; &quot;AK&quot; &quot;AZ&quot; &quot;AR&quot; &quot;CA&quot; &quot;CO&quot;</code></pre>
+<p>This means we can order the state names by their total murders. We first obtain the index that orders the vectors according to murder totals and then index the state names vector:</p>
+<pre class="r"><code>ind &lt;- order(murders$total)
+murders$abb[ind]</code></pre>
+<pre><code>##  [1] &quot;VT&quot; &quot;ND&quot; &quot;NH&quot; &quot;WY&quot; &quot;HI&quot; &quot;SD&quot; &quot;ME&quot; &quot;ID&quot; &quot;MT&quot; &quot;RI&quot; &quot;AK&quot; &quot;IA&quot; &quot;UT&quot; &quot;WV&quot; &quot;NE&quot;
+## [16] &quot;OR&quot; &quot;DE&quot; &quot;MN&quot; &quot;KS&quot; &quot;CO&quot; &quot;NM&quot; &quot;NV&quot; &quot;AR&quot; &quot;WA&quot; &quot;CT&quot; &quot;WI&quot; &quot;DC&quot; &quot;OK&quot; &quot;KY&quot; &quot;MA&quot;
+## [31] &quot;MS&quot; &quot;AL&quot; &quot;IN&quot; &quot;SC&quot; &quot;TN&quot; &quot;AZ&quot; &quot;NJ&quot; &quot;VA&quot; &quot;NC&quot; &quot;MD&quot; &quot;OH&quot; &quot;MO&quot; &quot;LA&quot; &quot;IL&quot; &quot;GA&quot;
+## [46] &quot;MI&quot; &quot;PA&quot; &quot;NY&quot; &quot;FL&quot; &quot;TX&quot; &quot;CA&quot;</code></pre>
+<p>According to the above, California had the most murders.</p>
+</div>
+<div id="max-and-which.max" class="section level3">
+<h3>2.9.3 max and which.max</h3>
+<p>If we are only interested in the entry with the largest value, we can use max for the value:</p>
+<pre class="r"><code>max(murders$total)</code></pre>
+<pre><code>## [1] 1257</code></pre>
+<p>and which.max for the index of the largest value:</p>
+<pre class="r"><code>i_max &lt;- which.max(murders$total)
+murders$state[i_max]</code></pre>
+<pre><code>## [1] &quot;California&quot;</code></pre>
+<p>For the minimum, we can use min and which.min in the same way.</p>
+<p>Does this mean California is the most dangerous state? In an upcoming section, we argue that we should be considering rates instead of totals. Before doing that, we introduce one last order-related function: rank.</p>
+</div>
+<div id="rank" class="section level3">
+<h3>2.9.4 rank</h3>
+<p>Although not as frequently used as order and sort, the function rank is also related to order and can be useful. For any given vector it returns a vector with the rank of the first entry, second entry, etc., of the input vector. Here is a simple example:</p>
+<pre class="r"><code>x &lt;- c(31, 4, 15, 92, 65)
+rank(x)</code></pre>
+<pre><code>## [1] 3 1 2 5 4</code></pre>
+<p>To summarize, let’s look at the results of the three functions we have introduced:</p>
+<pre><code> original  sort  order  rank
+ ---------------------------
+   31       4     2      3
+ ---------------------------
+   4        15    3      1
+ ---------------------------
+   15       31    1      2
+ ---------------------------
+   92       65    5      5
+ ---------------------------
+   65       92    4      4</code></pre>
+</div>
+<div id="beware-of-recycling" class="section level3">
+<h3>2.9.5 Beware of recycling</h3>
+<p>Another common source of unnoticed errors in R is the use of recycling. We saw that vectors are added elementwise. So if the vectors don’t match in length, it is natural to assume that we should get an error. But we don’t. Notice what happens:</p>
+<pre class="r"><code>x &lt;- c(1, 2, 3)
+y &lt;- c(10, 20, 30, 40, 50, 60, 70)
+x+y</code></pre>
+<pre><code>## Warning in x + y: 두 객체의 길이가 서로 배수관계에 있지 않습니다</code></pre>
+<pre><code>## [1] 11 22 33 41 52 63 71</code></pre>
+<p>We do get a warning, but no error. For the output, R has recycled the numbers in x. Notice the last digit of numbers in the output.</p>
+</div>
+</div>
+<div id="exercises-3" class="section level2">
+<h2>2.10 Exercises</h2>
+<p>For these exercises we will use the US murders dataset. Make sure you load it prior to starting.</p>
+<pre class="r"><code>library(dslabs)
+data(&quot;murders&quot;)</code></pre>
+<ol style="list-style-type: decimal">
+<li>Use the $ operator to access the population size data and store it as the object pop. Then use the sort function to redefine pop so that it is sorted. Finally, use the [ operator to report the smallest population size.</li>
+</ol>
+<pre class="r"><code>pop &lt;- murders$population
+pop &lt;- sort(pop)
+pop[1]</code></pre>
+<pre><code>## [1] 563626</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>Now instead of the smallest population size, find the index of the entry with the smallest population size. Hint: use order instead of sort.</li>
+</ol>
+<pre class="r"><code>pop &lt;- murders$population
+pop &lt;- order(pop)
+murders$abb[pop]</code></pre>
+<pre><code>##  [1] &quot;WY&quot; &quot;DC&quot; &quot;VT&quot; &quot;ND&quot; &quot;AK&quot; &quot;SD&quot; &quot;DE&quot; &quot;MT&quot; &quot;RI&quot; &quot;NH&quot; &quot;ME&quot; &quot;HI&quot; &quot;ID&quot; &quot;NE&quot; &quot;WV&quot;
+## [16] &quot;NM&quot; &quot;NV&quot; &quot;UT&quot; &quot;KS&quot; &quot;AR&quot; &quot;MS&quot; &quot;IA&quot; &quot;CT&quot; &quot;OK&quot; &quot;OR&quot; &quot;KY&quot; &quot;LA&quot; &quot;SC&quot; &quot;AL&quot; &quot;CO&quot;
+## [31] &quot;MN&quot; &quot;WI&quot; &quot;MD&quot; &quot;MO&quot; &quot;TN&quot; &quot;AZ&quot; &quot;IN&quot; &quot;MA&quot; &quot;WA&quot; &quot;VA&quot; &quot;NJ&quot; &quot;NC&quot; &quot;MI&quot; &quot;GA&quot; &quot;OH&quot;
+## [46] &quot;PA&quot; &quot;IL&quot; &quot;NY&quot; &quot;FL&quot; &quot;TX&quot; &quot;CA&quot;</code></pre>
+<p>-&gt; answer: “Wyoming”</p>
+<ol start="3" style="list-style-type: decimal">
+<li>We can actually perform the same operation as in the previous exercise using the function which.min. Write one line of code that does this.</li>
+</ol>
+<pre class="r"><code>murders$state[which.min(murders$population)]</code></pre>
+<pre><code>## [1] &quot;Wyoming&quot;</code></pre>
+<ol start="4" style="list-style-type: decimal">
+<li>Now we know how small the smallest state is and we know which row represents it. Which state is it? Define a variable states to be the state names from the murders data frame. Report the name of the state with the smallest population.</li>
+</ol>
+<pre class="r"><code>states &lt;- murders$state
+states[which.min(murders$population)]</code></pre>
+<pre><code>## [1] &quot;Wyoming&quot;</code></pre>
+<ol start="5" style="list-style-type: decimal">
+<li>You can create a data frame using the data.frame function. Here is a quick example:</li>
+</ol>
+<pre class="r"><code>temp &lt;- c(35, 88, 42, 84, 81, 30)
+city &lt;- c(&quot;Beijing&quot;, &quot;Lagos&quot;, &quot;Paris&quot;, &quot;Rio de Janeiro&quot;, 
+          &quot;San Juan&quot;, &quot;Toronto&quot;)
+city_temps &lt;- data.frame(name = city, temperature = temp)</code></pre>
+<p>Use the rank function to determine the population rank of each state from smallest population size to biggest. Save these ranks in an object called ranks, then create a data frame with the state name and its rank. Call the data frame my_df.</p>
+<pre class="r"><code>ranks &lt;- rank(murders$population)
+my_df &lt;- data.frame(name= murders$state, rank= ranks)
+my_df</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["name"],"name":[1],"type":["chr"],"align":["left"]},{"label":["rank"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"Alabama","2":"29"},{"1":"Alaska","2":"5"},{"1":"Arizona","2":"36"},{"1":"Arkansas","2":"20"},{"1":"California","2":"51"},{"1":"Colorado","2":"30"},{"1":"Connecticut","2":"23"},{"1":"Delaware","2":"7"},{"1":"District of Columbia","2":"2"},{"1":"Florida","2":"49"},{"1":"Georgia","2":"44"},{"1":"Hawaii","2":"12"},{"1":"Idaho","2":"13"},{"1":"Illinois","2":"47"},{"1":"Indiana","2":"37"},{"1":"Iowa","2":"22"},{"1":"Kansas","2":"19"},{"1":"Kentucky","2":"26"},{"1":"Louisiana","2":"27"},{"1":"Maine","2":"11"},{"1":"Maryland","2":"33"},{"1":"Massachusetts","2":"38"},{"1":"Michigan","2":"43"},{"1":"Minnesota","2":"31"},{"1":"Mississippi","2":"21"},{"1":"Missouri","2":"34"},{"1":"Montana","2":"8"},{"1":"Nebraska","2":"14"},{"1":"Nevada","2":"17"},{"1":"New Hampshire","2":"10"},{"1":"New Jersey","2":"41"},{"1":"New Mexico","2":"16"},{"1":"New York","2":"48"},{"1":"North Carolina","2":"42"},{"1":"North Dakota","2":"4"},{"1":"Ohio","2":"45"},{"1":"Oklahoma","2":"24"},{"1":"Oregon","2":"25"},{"1":"Pennsylvania","2":"46"},{"1":"Rhode Island","2":"9"},{"1":"South Carolina","2":"28"},{"1":"South Dakota","2":"6"},{"1":"Tennessee","2":"35"},{"1":"Texas","2":"50"},{"1":"Utah","2":"18"},{"1":"Vermont","2":"3"},{"1":"Virginia","2":"40"},{"1":"Washington","2":"39"},{"1":"West Virginia","2":"15"},{"1":"Wisconsin","2":"32"},{"1":"Wyoming","2":"1"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<ol start="6" style="list-style-type: decimal">
+<li>Repeat the previous exercise, but this time order my_df so that the states are ordered from least populous to most populous. Hint: create an object ind that stores the indexes needed to order the population values. Then use the bracket operator [ to re-order each column in the data frame.</li>
+</ol>
+<pre class="r"><code>ind &lt;- order(murders$population)
+my_df2 &lt;- data.frame(name= murders$state[ind],rank=ranks[ind])
+my_df2</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["name"],"name":[1],"type":["chr"],"align":["left"]},{"label":["rank"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"Wyoming","2":"1"},{"1":"District of Columbia","2":"2"},{"1":"Vermont","2":"3"},{"1":"North Dakota","2":"4"},{"1":"Alaska","2":"5"},{"1":"South Dakota","2":"6"},{"1":"Delaware","2":"7"},{"1":"Montana","2":"8"},{"1":"Rhode Island","2":"9"},{"1":"New Hampshire","2":"10"},{"1":"Maine","2":"11"},{"1":"Hawaii","2":"12"},{"1":"Idaho","2":"13"},{"1":"Nebraska","2":"14"},{"1":"West Virginia","2":"15"},{"1":"New Mexico","2":"16"},{"1":"Nevada","2":"17"},{"1":"Utah","2":"18"},{"1":"Kansas","2":"19"},{"1":"Arkansas","2":"20"},{"1":"Mississippi","2":"21"},{"1":"Iowa","2":"22"},{"1":"Connecticut","2":"23"},{"1":"Oklahoma","2":"24"},{"1":"Oregon","2":"25"},{"1":"Kentucky","2":"26"},{"1":"Louisiana","2":"27"},{"1":"South Carolina","2":"28"},{"1":"Alabama","2":"29"},{"1":"Colorado","2":"30"},{"1":"Minnesota","2":"31"},{"1":"Wisconsin","2":"32"},{"1":"Maryland","2":"33"},{"1":"Missouri","2":"34"},{"1":"Tennessee","2":"35"},{"1":"Arizona","2":"36"},{"1":"Indiana","2":"37"},{"1":"Massachusetts","2":"38"},{"1":"Washington","2":"39"},{"1":"Virginia","2":"40"},{"1":"New Jersey","2":"41"},{"1":"North Carolina","2":"42"},{"1":"Michigan","2":"43"},{"1":"Georgia","2":"44"},{"1":"Ohio","2":"45"},{"1":"Pennsylvania","2":"46"},{"1":"Illinois","2":"47"},{"1":"New York","2":"48"},{"1":"Florida","2":"49"},{"1":"Texas","2":"50"},{"1":"California","2":"51"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<ol start="7" style="list-style-type: decimal">
+<li>The na_example vector represents a series of counts. You can quickly examine the object using:</li>
+</ol>
+<pre class="r"><code>library(dslabs)
+data(&quot;na_example&quot;)  
+str(na_example)</code></pre>
+<pre><code>##  int [1:1000] 2 1 3 2 1 3 1 4 3 2 ...</code></pre>
+<p>However, when we compute the average with the function mean, we obtain an NA:</p>
+<pre class="r"><code>mean(na_example)</code></pre>
+<pre><code>## [1] NA</code></pre>
+<p>The is.na function returns a logical vector that tells us which entries are NA. Assign this logical vector to an object called ind and determine how many NAs does na_example have.</p>
+<pre class="r"><code>ind &lt;- is.na(na_example)
+table(ind)</code></pre>
+<pre><code>## ind
+## FALSE  TRUE 
+##   855   145</code></pre>
+<p>-&gt; answer: 145</p>
+<ol start="8" style="list-style-type: decimal">
+<li>Now compute the average again, but only for the entries that are not NA. Hint: remember the ! operator.</li>
+</ol>
+<pre class="r"><code>int &lt;- na_example[!ind]
+mean(int)</code></pre>
+<pre><code>## [1] 2.301754</code></pre>
+</div>
+<div id="vector-arithmetics" class="section level2">
+<h2>2.11 Vector arithmetics</h2>
+<p>California had the most murders, but does this mean it is the most dangerous state? What if it just has many more people than any other state? We can quickly confirm that California indeed has the largest population:</p>
+<pre class="r"><code>library(dslabs)
+data(&quot;murders&quot;)
+murders$state[which.max(murders$population)]</code></pre>
+<pre><code>## [1] &quot;California&quot;</code></pre>
+<p>with over 37 million inhabitants. It is therefore unfair to compare the totals if we are interested in learning how safe the state is. What we really should be computing is the murders per capita. The reports we describe in the motivating section used murders per 100,000 as the unit. To compute this quantity, the powerful vector arithmetic capabilities of R come in handy.</p>
+<div id="rescaling-a-vector" class="section level3">
+<h3>2.11.1 Rescaling a vector</h3>
+<p>In R, arithmetic operations on vectors occur element-wise. For a quick example, suppose we have height in inches:</p>
+<pre class="r"><code>inches &lt;- c(69, 62, 66, 70, 70, 73, 67, 73, 67, 70)</code></pre>
+<p>and want to convert to centimeters. Notice what happens when we multiply inches by 2.54:</p>
+<pre class="r"><code>inches * 2.54</code></pre>
+<pre><code>##  [1] 175.26 157.48 167.64 177.80 177.80 185.42 170.18 185.42 170.18 177.80</code></pre>
+<p>In the line above, we multiplied each element by 2.54. Similarly, if for each entry we want to compute how many inches taller or shorter than 69 inches, the average height for males, we can subtract it from every entry like this:</p>
+<pre class="r"><code>inches - 69</code></pre>
+<pre><code>##  [1]  0 -7 -3  1  1  4 -2  4 -2  1</code></pre>
+</div>
+<div id="two-vectors" class="section level3">
+<h3>2.11.2 Two vectors</h3>
+<p>If we have two vectors of the same length, and we sum them in R, they will be added entry by entry as follows:</p>
+<pre><code>      a      e     a+e
+      b   +  f  =  b+f
+      c      g     c+g
+      d      h     d+h
+      </code></pre>
+<p>The same holds for other mathematical operations, such as -, * and /.</p>
+<p>This implies that to compute the murder rates we can simply type:</p>
+<pre class="r"><code>murder_rate &lt;- murders$total/murders$population*100000</code></pre>
+<p>Once we do this, we notice that California is no longer near the top of the list. In fact, we can use what we have learned to order the states by murder rate:</p>
+<pre class="r"><code>murders$abb[order(murder_rate)]</code></pre>
+<pre><code>##  [1] &quot;VT&quot; &quot;NH&quot; &quot;HI&quot; &quot;ND&quot; &quot;IA&quot; &quot;ID&quot; &quot;UT&quot; &quot;ME&quot; &quot;WY&quot; &quot;OR&quot; &quot;SD&quot; &quot;MN&quot; &quot;MT&quot; &quot;CO&quot; &quot;WA&quot;
+## [16] &quot;WV&quot; &quot;RI&quot; &quot;WI&quot; &quot;NE&quot; &quot;MA&quot; &quot;IN&quot; &quot;KS&quot; &quot;NY&quot; &quot;KY&quot; &quot;AK&quot; &quot;OH&quot; &quot;CT&quot; &quot;NJ&quot; &quot;AL&quot; &quot;IL&quot;
+## [31] &quot;OK&quot; &quot;NC&quot; &quot;NV&quot; &quot;VA&quot; &quot;AR&quot; &quot;TX&quot; &quot;NM&quot; &quot;CA&quot; &quot;FL&quot; &quot;TN&quot; &quot;PA&quot; &quot;AZ&quot; &quot;GA&quot; &quot;MS&quot; &quot;MI&quot;
+## [46] &quot;DE&quot; &quot;SC&quot; &quot;MD&quot; &quot;MO&quot; &quot;LA&quot; &quot;DC&quot;</code></pre>
+</div>
+</div>
+<div id="exercises-4" class="section level2">
+<h2>2.12 Exercises</h2>
+<ol style="list-style-type: decimal">
+<li>Previously we created this data frame:</li>
+</ol>
+<pre class="r"><code>temp &lt;- c(35, 88, 42, 84, 81, 30)
+city &lt;- c(&quot;Beijing&quot;, &quot;Lagos&quot;, &quot;Paris&quot;, &quot;Rio de Janeiro&quot;, 
+          &quot;San Juan&quot;, &quot;Toronto&quot;)
+city_temps &lt;- data.frame(name = city, temperature = temp)</code></pre>
+<p>Remake the data frame using the code above, but add a line that converts the temperature from Fahrenheit to Celsius. The conversion is <span class="math inline">\(C = \frac{5}{9} \times (F - 32)\)</span></p>
+<pre class="r"><code>temp &lt;- c(35, 88, 42, 84, 81, 30)
+city &lt;- c(&quot;Beijing&quot;, &quot;Lagos&quot;, &quot;Paris&quot;, &quot;Rio de Janeiro&quot;, 
+          &quot;San Juan&quot;, &quot;Toronto&quot;)
+temp2 &lt;- 5/9*(temp-32)
+city_temps &lt;- data.frame(name = city, temperature_F = temp, temperature_C= temp2)</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>What is the following sum <span class="math inline">\(1+1/2^2 + 1/3^2 + \dots 1/100^2\)</span>? Hint: thanks to Euler, we know it should be close to <span class="math inline">\(\pi^2/6\)</span></li>
+</ol>
+<pre class="r"><code>A &lt;- c(1)
+n &lt;- 1:100
+B &lt;- c(n^2)
+sum(A/B)</code></pre>
+<pre><code>## [1] 1.634984</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>Compute the per 100,000 murder rate for each state and store it in the object murder_rate. Then compute the average murder rate for the US using the function mean. What is the average?</li>
+</ol>
+<pre class="r"><code>murder_rate &lt;- murders$total/murders$population*100000
+mean(murder_rate)</code></pre>
+<pre><code>## [1] 2.779125</code></pre>
+</div>
+<div id="indexing" class="section level2">
+<h2>2.13 Indexing</h2>
+<p>R provides a powerful and convenient way of indexing vectors. We can, for example, subset a vector based on properties of another vector. In this section, we continue working with our US murders example, which we can load like this:</p>
+<pre class="r"><code>library(dslabs)
+data(&quot;murders&quot;)</code></pre>
+<div id="subsetting-with-logicals" class="section level3">
+<h3>2.13.1 Subsetting with logicals</h3>
+<p>We have now calculated the murder rate using:</p>
+<pre class="r"><code>murder_rate &lt;- murders$total / murders$population * 100000</code></pre>
+<p>Imagine you are moving from Italy where, according to an ABC news report, the murder rate is only 0.71 per 100,000. You would prefer to move to a state with a similar murder rate. Another powerful feature of R is that we can use logicals to index vectors. If we compare a vector to a single number, it actually performs the test for each entry. The following is an example related to the question above:</p>
+<pre class="r"><code>ind &lt;- murder_rate &lt; 0.71
+ind</code></pre>
+<pre><code>##  [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE
+## [13] FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [25] FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE  TRUE FALSE
+## [37] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE
+## [49] FALSE FALSE FALSE</code></pre>
+<p>If we instead want to know if a value is less or equal, we can use:</p>
+<pre class="r"><code>ind &lt;- murder_rate &lt;= 0.71
+ind</code></pre>
+<pre><code>##  [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE
+## [13] FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [25] FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE  TRUE FALSE
+## [37] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE
+## [49] FALSE FALSE FALSE</code></pre>
+<p>Note that we get back a logical vector with TRUE for each entry smaller than or equal to 0.71. To see which states these are, we can leverage the fact that vectors can be indexed with logicals.</p>
+<pre class="r"><code>murders$state[ind]</code></pre>
+<pre><code>## [1] &quot;Hawaii&quot;        &quot;Iowa&quot;          &quot;New Hampshire&quot; &quot;North Dakota&quot; 
+## [5] &quot;Vermont&quot;</code></pre>
+<p>In order to count how many are TRUE, the function sum returns the sum of the entries of a vector and logical vectors get coerced to numeric with TRUE coded as 1 and FALSE as 0. Thus we can count the states using:</p>
+<pre class="r"><code>sum(ind)</code></pre>
+<pre><code>## [1] 5</code></pre>
+</div>
+<div id="logical-operators" class="section level3">
+<h3>2.13.2 Logical operators</h3>
+<p>Suppose we like the mountains and we want to move to a safe state in the western region of the country. We want the murder rate to be at most 1. In this case, we want two different things to be true. Here we can use the logical operator and, which in R is represented with &amp;. This operation results in TRUE only when both logicals are TRUE. To see this, consider this example:</p>
+<pre class="r"><code>TRUE &amp; TRUE</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code>TRUE &amp; FALSE</code></pre>
+<pre><code>## [1] FALSE</code></pre>
+<pre class="r"><code>FALSE &amp; FALSE</code></pre>
+<pre><code>## [1] FALSE</code></pre>
+<p>For our example, we can form two logicals:</p>
+<pre class="r"><code>west &lt;- murders$region == &quot;West&quot;
+safe &lt;- murder_rate &lt;= 1</code></pre>
+<p>and we can use the &amp; to get a vector of logicals that tells us which states satisfy both conditions:</p>
+<pre class="r"><code>ind &lt;- safe &amp; west
+murders$state[ind]</code></pre>
+<pre><code>## [1] &quot;Hawaii&quot;  &quot;Idaho&quot;   &quot;Oregon&quot;  &quot;Utah&quot;    &quot;Wyoming&quot;</code></pre>
+</div>
+<div id="which" class="section level3">
+<h3>2.13.3 which</h3>
+<p>Suppose we want to look up California’s murder rate. For this type of operation, it is convenient to convert vectors of logicals into indexes instead of keeping long vectors of logicals. The function which tells us which entries of a logical vector are TRUE. So we can type:</p>
+<pre class="r"><code>ind &lt;- which(murders$state == &quot;California&quot;)
+murder_rate[ind]</code></pre>
+<pre><code>## [1] 3.374138</code></pre>
+</div>
+<div id="match" class="section level3">
+<h3>2.13.4 match</h3>
+<p>If instead of just one state we want to find out the murder rates for several states, say New York, Florida, and Texas, we can use the function match. This function tells us which indexes of a second vector match each of the entries of a first vector:</p>
+<pre class="r"><code>ind &lt;- match(c(&quot;New York&quot;, &quot;Florida&quot;, &quot;Texas&quot;), murders$state)
+ind</code></pre>
+<pre><code>## [1] 33 10 44</code></pre>
+<p>Now we can look at the murder rates:</p>
+<pre class="r"><code>murder_rate[ind]</code></pre>
+<pre><code>## [1] 2.667960 3.398069 3.201360</code></pre>
+</div>
+<div id="in" class="section level3">
+<h3>2.13.5 %in%</h3>
+<p>If rather than an index we want a logical that tells us whether or not each element of a first vector is in a second, we can use the function %in%. Let’s imagine you are not sure if Boston, Dakota, and Washington are states. You can find out like this:</p>
+<pre class="r"><code>c(&quot;Boston&quot;, &quot;Dakota&quot;, &quot;Washington&quot;) %in% murders$state</code></pre>
+<pre><code>## [1] FALSE FALSE  TRUE</code></pre>
+<p>Note that we will be using %in% often throughout the book.</p>
+<p>Advanced: There is a connection between match and %in% through which. To see this, notice that the following two lines produce the same index (although in different order):</p>
+<pre class="r"><code>match(c(&quot;New York&quot;, &quot;Florida&quot;, &quot;Texas&quot;), murders$state)</code></pre>
+<pre><code>## [1] 33 10 44</code></pre>
+<pre class="r"><code>which(murders$state%in%c(&quot;New York&quot;, &quot;Florida&quot;, &quot;Texas&quot;))</code></pre>
+<pre><code>## [1] 10 33 44</code></pre>
+</div>
+</div>
+<div id="exercises-5" class="section level2">
+<h2>2.14 Exercises</h2>
 </div>
 </div>
 
