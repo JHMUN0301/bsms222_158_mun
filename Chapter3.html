@@ -210,7 +210,14 @@ ifelse(a &gt; 0, 1/a, NA)</code></pre>
 <p>The function is particularly useful because it works on vectors. It examines each entry of the logical vector and returns elements from the vector provided in the second argument, if the entry is TRUE, or elements from the vector provided in the third argument, if the entry is FALSE.</p>
 <pre class="r"><code>a &lt;- c(0, 1, 2, -4, 5)
 result &lt;- ifelse(a &gt; 0, 1/a, NA)</code></pre>
-This table helps us see what happened:
+<p>This table helps us see what happened:</p>
+<pre class="r"><code>A &lt;- c(0,1,2,-4,5)
+TF &lt;- c(FALSE, TRUE, TRUE, FALSE, TRUE)
+one &lt;- c(1/A)
+two &lt;- c(NA, NA, NA, NA, NA)
+rst &lt;- ifelse(A&gt;0, 1/A, NA)
+w_hpnd &lt;-data.frame(a=A, is_a_positive= TF, answer1= one, answer2= two, result= rst)
+w_hpnd</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
 {"columns":[{"label":["a"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["is_a_positive"],"name":[2],"type":["lgl"],"align":["right"]},{"label":["answer1"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["answer2"],"name":[4],"type":["lgl"],"align":["right"]},{"label":["result"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"FALSE","3":"Inf","4":"NA","5":"NA"},{"1":"1","2":"TRUE","3":"1.00","4":"NA","5":"1.0"},{"1":"2","2":"TRUE","3":"0.50","4":"NA","5":"0.5"},{"1":"-4","2":"FALSE","3":"-0.25","4":"NA","5":"NA"},{"1":"5","2":"TRUE","3":"0.20","4":"NA","5":"0.2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
@@ -344,7 +351,7 @@ avg(1:10)</code></pre>
 ##     else &quot;ts&quot;
 ##     y
 ## }
-## &lt;bytecode: 0x000000001516c318&gt;
+## &lt;bytecode: 0x0000000013296ab0&gt;
 ## &lt;environment: namespace:stats&gt;</code></pre>
 <p>If we want to be absolutely sure that we use the dplyr filter, we can use</p>
 <pre class="r"><code>dplyr::filter</code></pre>
@@ -352,7 +359,7 @@ avg(1:10)</code></pre>
 ## {
 ##     UseMethod(&quot;filter&quot;)
 ## }
-## &lt;bytecode: 0x000000001ca04260&gt;
+## &lt;bytecode: 0x000000001c906ce8&gt;
 ## &lt;environment: namespace:dplyr&gt;</code></pre>
 <p>Also note that if we want to use a function in a package without loading the entire package, we can use the double colon as well.</p>
 <p>For more on this more advanced topic we recommend the R packages book.</p>
