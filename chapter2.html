@@ -227,7 +227,7 @@ c &lt;- -1</code></pre>
 <pre class="r"><code>log(a)</code></pre>
 <pre><code>## [1] 0</code></pre>
 <p>You can find out what the function expects and what it does by reviewing the very useful manuals included in R. You can get help by using the help function like this:</p>
-<pre class="r"><code>help(log)</code></pre>
+<pre class="r"><code>help(&quot;log&quot;)</code></pre>
 <pre><code>## starting httpd help server ... done</code></pre>
 <p>For most functions, we can also use this shorthand:</p>
 <pre class="r"><code>?log</code></pre>
@@ -419,7 +419,13 @@ n*(n+1)/2</code></pre>
 x &lt;- seq(1, n)
 sum(x)</code></pre>
 <pre><code>## [1] 500500</code></pre>
-<p>Based on the result, what do you think the functions seq and sum do? You can use help. a. sum creates a list of numbers and seq adds them up. b. seq creates a list of numbers and sum adds them up. c. seq creates a random list and sum computes the sum of 1 through 1,000. d. sum always returns the same number.</p>
+<p>Based on the result, what do you think the functions seq and sum do? You can use help.</p>
+<ol style="list-style-type: lower-alpha">
+<li>sum creates a list of numbers and seq adds them up.</li>
+<li>seq creates a list of numbers and sum adds them up.</li>
+<li>seq creates a random list and sum computes the sum of 1 through 1,000.</li>
+<li>sum always returns the same number.</li>
+</ol>
 <p>-&gt; my answer: “b”</p>
 <ol start="4" style="list-style-type: decimal">
 <li>In math and programming, we say that we evaluate a function when we replace the argument with a given number. So if we type sqrt(4), we evaluate the sqrt function. In R, you can evaluate a function inside another function. The evaluations happen from the inside out. Use one line of code to compute the log, in base 10, of the square root of 100.</li>
@@ -524,10 +530,8 @@ z</code></pre>
 <p>Advanced: Mathematically, the values in pop are integers and there is an integer class in R. However, by default, numbers are assigned class numeric even when they are round integers. For example, class(1) returns numeric. You can turn them into class integer with the as.integer() function or by adding an L like this: 1L. Note the class by typing: class(1L)</p>
 <pre class="r"><code>class(1)</code></pre>
 <pre><code>## [1] &quot;numeric&quot;</code></pre>
-<pre class="r"><code>as.integer()</code></pre>
-<pre><code>## integer(0)</code></pre>
-<pre class="r"><code>class(1)</code></pre>
-<pre><code>## [1] &quot;numeric&quot;</code></pre>
+<pre class="r"><code>class(as.integer(1))</code></pre>
+<pre><code>## [1] &quot;integer&quot;</code></pre>
 <pre class="r"><code>class(1L)</code></pre>
 <pre><code>## [1] &quot;integer&quot;</code></pre>
 </div>
@@ -672,7 +676,8 @@ data(murders)</code></pre>
 <ol start="2" style="list-style-type: decimal">
 <li>What are the column names used by the data frame for these five variables?</li>
 </ol>
-<p>-&gt; answer: state, abb, region, population, total</p>
+<pre class="r"><code>names(murders)</code></pre>
+<pre><code>## [1] &quot;state&quot;      &quot;abb&quot;        &quot;region&quot;     &quot;population&quot; &quot;total&quot;</code></pre>
 <ol start="3" style="list-style-type: decimal">
 <li>Use the accessor $ to extract the state abbreviations and assign them to the object a. What is the class of this object?</li>
 </ol>
@@ -687,12 +692,12 @@ a</code></pre>
 <ol start="4" style="list-style-type: decimal">
 <li>Now use the square brackets to extract the state abbreviations and assign them to the object b. Use the identical function to determine if a and b are the same.</li>
 </ol>
-<pre class="r"><code>murders[, 2]</code></pre>
+<pre class="r"><code>murders[[&quot;abb&quot;]]</code></pre>
 <pre><code>##  [1] &quot;AL&quot; &quot;AK&quot; &quot;AZ&quot; &quot;AR&quot; &quot;CA&quot; &quot;CO&quot; &quot;CT&quot; &quot;DE&quot; &quot;DC&quot; &quot;FL&quot; &quot;GA&quot; &quot;HI&quot; &quot;ID&quot; &quot;IL&quot; &quot;IN&quot;
 ## [16] &quot;IA&quot; &quot;KS&quot; &quot;KY&quot; &quot;LA&quot; &quot;ME&quot; &quot;MD&quot; &quot;MA&quot; &quot;MI&quot; &quot;MN&quot; &quot;MS&quot; &quot;MO&quot; &quot;MT&quot; &quot;NE&quot; &quot;NV&quot; &quot;NH&quot;
 ## [31] &quot;NJ&quot; &quot;NM&quot; &quot;NY&quot; &quot;NC&quot; &quot;ND&quot; &quot;OH&quot; &quot;OK&quot; &quot;OR&quot; &quot;PA&quot; &quot;RI&quot; &quot;SC&quot; &quot;SD&quot; &quot;TN&quot; &quot;TX&quot; &quot;UT&quot;
 ## [46] &quot;VT&quot; &quot;VA&quot; &quot;WA&quot; &quot;WV&quot; &quot;WI&quot; &quot;WY&quot;</code></pre>
-<pre class="r"><code>b &lt;- murders[, 2]
+<pre class="r"><code>b &lt;- murders[[&quot;abb&quot;]]
 identical(a,b)</code></pre>
 <pre><code>## [1] TRUE</code></pre>
 <ol start="5" style="list-style-type: decimal">
@@ -860,8 +865,7 @@ temp</code></pre>
 <pre><code>##    Paris San Juan 
 ##       42       81</code></pre>
 <ol start="6" style="list-style-type: decimal">
-<li>Use the : operator to create a sequence of numbers<br />
-<span class="math inline">\(12\)</span>, <span class="math inline">\(13\)</span>, <span class="math inline">\(14\)</span>,…, <span class="math inline">\(73\)</span>.</li>
+<li>Use the : operator to create a sequence of numbers <span class="math inline">\(12\)</span>, <span class="math inline">\(13\)</span>, <span class="math inline">\(14\)</span>,…, <span class="math inline">\(73\)</span>.</li>
 </ol>
 <pre class="r"><code>12:73</code></pre>
 <pre><code>##  [1] 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36
@@ -1008,17 +1012,13 @@ pop[1]</code></pre>
 </ol>
 <pre class="r"><code>pop &lt;- murders$population
 pop &lt;- order(pop)
-murders$abb[pop]</code></pre>
-<pre><code>##  [1] &quot;WY&quot; &quot;DC&quot; &quot;VT&quot; &quot;ND&quot; &quot;AK&quot; &quot;SD&quot; &quot;DE&quot; &quot;MT&quot; &quot;RI&quot; &quot;NH&quot; &quot;ME&quot; &quot;HI&quot; &quot;ID&quot; &quot;NE&quot; &quot;WV&quot;
-## [16] &quot;NM&quot; &quot;NV&quot; &quot;UT&quot; &quot;KS&quot; &quot;AR&quot; &quot;MS&quot; &quot;IA&quot; &quot;CT&quot; &quot;OK&quot; &quot;OR&quot; &quot;KY&quot; &quot;LA&quot; &quot;SC&quot; &quot;AL&quot; &quot;CO&quot;
-## [31] &quot;MN&quot; &quot;WI&quot; &quot;MD&quot; &quot;MO&quot; &quot;TN&quot; &quot;AZ&quot; &quot;IN&quot; &quot;MA&quot; &quot;WA&quot; &quot;VA&quot; &quot;NJ&quot; &quot;NC&quot; &quot;MI&quot; &quot;GA&quot; &quot;OH&quot;
-## [46] &quot;PA&quot; &quot;IL&quot; &quot;NY&quot; &quot;FL&quot; &quot;TX&quot; &quot;CA&quot;</code></pre>
-<p>-&gt; answer: “Wyoming”</p>
+pop[1]</code></pre>
+<pre><code>## [1] 51</code></pre>
 <ol start="3" style="list-style-type: decimal">
 <li>We can actually perform the same operation as in the previous exercise using the function which.min. Write one line of code that does this.</li>
 </ol>
-<pre class="r"><code>murders$state[which.min(murders$population)]</code></pre>
-<pre><code>## [1] &quot;Wyoming&quot;</code></pre>
+<pre class="r"><code>which.min(murders$population)</code></pre>
+<pre><code>## [1] 51</code></pre>
 <ol start="4" style="list-style-type: decimal">
 <li>Now we know how small the smallest state is and we know which row represents it. Which state is it? Define a variable states to be the state names from the murders data frame. Report the name of the state with the smallest population.</li>
 </ol>
@@ -1128,7 +1128,13 @@ city_temps &lt;- data.frame(name = city, temperature = temp)</code></pre>
 city &lt;- c(&quot;Beijing&quot;, &quot;Lagos&quot;, &quot;Paris&quot;, &quot;Rio de Janeiro&quot;, 
           &quot;San Juan&quot;, &quot;Toronto&quot;)
 temp2 &lt;- 5/9*(temp-32)
-city_temps &lt;- data.frame(name = city, temperature_F = temp, temperature_C= temp2)</code></pre>
+city_temps &lt;- data.frame(name = city, temperature_F = temp, temperature_C= temp2)
+city_temps</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["name"],"name":[1],"type":["chr"],"align":["left"]},{"label":["temperature_F"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["temperature_C"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"Beijing","2":"35","3":"1.666667"},{"1":"Lagos","2":"88","3":"31.111111"},{"1":"Paris","2":"42","3":"5.555556"},{"1":"Rio de Janeiro","2":"84","3":"28.888889"},{"1":"San Juan","2":"81","3":"27.222222"},{"1":"Toronto","2":"30","3":"-1.111111"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
 <ol start="2" style="list-style-type: decimal">
 <li>What is the following sum <span class="math inline">\(1+1/2^2 + 1/3^2 + \dots 1/100^2\)</span>? Hint: thanks to Euler, we know it should be close to <span class="math inline">\(\pi^2/6\)</span></li>
 </ol>
@@ -1154,21 +1160,9 @@ data(&quot;murders&quot;)</code></pre>
 <p>We have now calculated the murder rate using:</p>
 <pre class="r"><code>murder_rate &lt;- murders$total / murders$population * 100000</code></pre>
 <p>Imagine you are moving from Italy where, according to an ABC news report, the murder rate is only 0.71 per 100,000. You would prefer to move to a state with a similar murder rate. Another powerful feature of R is that we can use logicals to index vectors. If we compare a vector to a single number, it actually performs the test for each entry. The following is an example related to the question above:</p>
-<pre class="r"><code>ind &lt;- murder_rate &lt; 0.71
-ind</code></pre>
-<pre><code>##  [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE
-## [13] FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-## [25] FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE  TRUE FALSE
-## [37] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE
-## [49] FALSE FALSE FALSE</code></pre>
+<pre class="r"><code>ind &lt;- murder_rate &lt; 0.71</code></pre>
 <p>If we instead want to know if a value is less or equal, we can use:</p>
-<pre class="r"><code>ind &lt;- murder_rate &lt;= 0.71
-ind</code></pre>
-<pre><code>##  [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE
-## [13] FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
-## [25] FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE  TRUE FALSE
-## [37] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE
-## [49] FALSE FALSE FALSE</code></pre>
+<pre class="r"><code>ind &lt;- murder_rate &lt;= 0.71</code></pre>
 <p>Note that we get back a logical vector with TRUE for each entry smaller than or equal to 0.71. To see which states these are, we can leverage the fact that vectors can be indexed with logicals.</p>
 <pre class="r"><code>murders$state[ind]</code></pre>
 <pre><code>## [1] &quot;Hawaii&quot;        &quot;Iowa&quot;          &quot;New Hampshire&quot; &quot;North Dakota&quot; 
@@ -1242,7 +1236,7 @@ low &lt;- murder_rate &lt; 1</code></pre>
 <ol start="3" style="list-style-type: decimal">
 <li>Use the results from the previous exercise to report the names of the states with murder rates lower than 1.</li>
 </ol>
-<pre class="r"><code>murders$state[low]</code></pre>
+<pre class="r"><code>murders$state[which(low)]</code></pre>
 <pre><code>##  [1] &quot;Hawaii&quot;        &quot;Idaho&quot;         &quot;Iowa&quot;          &quot;Maine&quot;        
 ##  [5] &quot;Minnesota&quot;     &quot;New Hampshire&quot; &quot;North Dakota&quot;  &quot;Oregon&quot;       
 ##  [9] &quot;South Dakota&quot;  &quot;Utah&quot;          &quot;Vermont&quot;       &quot;Wyoming&quot;</code></pre>
