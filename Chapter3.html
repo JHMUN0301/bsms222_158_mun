@@ -212,7 +212,7 @@ ifelse(a &gt; 0, 1/a, NA)</code></pre>
 result &lt;- ifelse(a &gt; 0, 1/a, NA)</code></pre>
 <p>This table helps us see what happened:</p>
 <pre class="r"><code>A &lt;- c(0,1,2,-4,5)
-TF &lt;- c(FALSE, TRUE, TRUE, FALSE, TRUE)
+TF &lt;- ifelse(a &gt; 0, TRUE, FALSE)
 one &lt;- c(1/A)
 two &lt;- c(NA, NA, NA, NA, NA)
 rst &lt;- ifelse(A&gt;0, 1/A, NA)
@@ -351,7 +351,7 @@ avg(1:10)</code></pre>
 ##     else &quot;ts&quot;
 ##     y
 ## }
-## &lt;bytecode: 0x0000000013296b00&gt;
+## &lt;bytecode: 0x000000001329bc48&gt;
 ## &lt;environment: namespace:stats&gt;</code></pre>
 <p>If we want to be absolutely sure that we use the dplyr filter, we can use</p>
 <pre class="r"><code>dplyr::filter</code></pre>
@@ -359,7 +359,7 @@ avg(1:10)</code></pre>
 ## {
 ##     UseMethod(&quot;filter&quot;)
 ## }
-## &lt;bytecode: 0x000000001c8fb228&gt;
+## &lt;bytecode: 0x000000001c90b228&gt;
 ## &lt;environment: namespace:dplyr&gt;</code></pre>
 <p>Also note that if we want to use a function in a package without loading the entire package, we can use the double colon as well.</p>
 <p>For more on this more advanced topic we recommend the R packages book.</p>
