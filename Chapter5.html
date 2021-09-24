@@ -302,26 +302,27 @@ filename %in% list.files(file.path(dir, &quot;extdata&quot;)) </code></pre>
 ## [25] &quot;Chapter4.nb.html&quot;                                       
 ## [26] &quot;Chapter4.pdf&quot;                                           
 ## [27] &quot;Chapter4.Rmd&quot;                                           
-## [28] &quot;Chapter5.nb.html&quot;                                       
-## [29] &quot;Chapter5.pdf&quot;                                           
-## [30] &quot;Chapter5.Rmd&quot;                                           
-## [31] &quot;env.RData&quot;                                              
-## [32] &quot;environments.RData&quot;                                     
-## [33] &quot;fertility-two-countries-example.csv&quot;                    
-## [34] &quot;HRlist2.txt&quot;                                            
-## [35] &quot;life-expectancy-and-fertility-two-countries-example.csv&quot;
-## [36] &quot;murders.csv&quot;                                            
-## [37] &quot;murders5-1-5.csv&quot;                                       
-## [38] &quot;murders5-2.csv&quot;                                         
-## [39] &quot;murders5-4.csv&quot;                                         
-## [40] &quot;olive.csv&quot;                                              
-## [41] &quot;RD-Mortality-Report_2015-18-180531.pdf&quot;                 
-## [42] &quot;README.md&quot;                                              
-## [43] &quot;ssa-death-probability.csv&quot;                              
-## [44] &quot;test.nb.html&quot;                                           
-## [45] &quot;test.Rmd&quot;                                               
-## [46] &quot;Tutorial_SCN2A.nb.html&quot;                                 
-## [47] &quot;Tutorial_SCN2A.Rmd&quot;</code></pre>
+## [28] &quot;Chapter5.html&quot;                                          
+## [29] &quot;Chapter5.nb.html&quot;                                       
+## [30] &quot;Chapter5.pdf&quot;                                           
+## [31] &quot;Chapter5.Rmd&quot;                                           
+## [32] &quot;env.RData&quot;                                              
+## [33] &quot;environments.RData&quot;                                     
+## [34] &quot;fertility-two-countries-example.csv&quot;                    
+## [35] &quot;HRlist2.txt&quot;                                            
+## [36] &quot;life-expectancy-and-fertility-two-countries-example.csv&quot;
+## [37] &quot;murders.csv&quot;                                            
+## [38] &quot;murders5-1-5.csv&quot;                                       
+## [39] &quot;murders5-2.csv&quot;                                         
+## [40] &quot;murders5-4.csv&quot;                                         
+## [41] &quot;olive.csv&quot;                                              
+## [42] &quot;RD-Mortality-Report_2015-18-180531.pdf&quot;                 
+## [43] &quot;README.md&quot;                                              
+## [44] &quot;ssa-death-probability.csv&quot;                              
+## [45] &quot;test.nb.html&quot;                                           
+## [46] &quot;test.Rmd&quot;                                               
+## [47] &quot;Tutorial_SCN2A.nb.html&quot;                                 
+## [48] &quot;Tutorial_SCN2A.Rmd&quot;</code></pre>
 </div>
 </div>
 <div id="the-readr-and-readxl-packages" class="section level2">
@@ -664,24 +665,35 @@ file.copy(fpath, &quot;ssa-death-probability.csv&quot;)</code></pre>
 path &lt;- system.file(&quot;extdata&quot;, package = &quot;dslabs&quot;)
 fpath &lt;- file.path(path, filename)
 #file.copy(fpath, &quot;olive.csv&quot;)
-dat &lt;- read_csv(filename)</code></pre>
-<pre><code>## New names:
-## * `` -&gt; ...1
-## Rows: 572 Columns: 11
-## -- Column specification --------------------------------------------------------
+dat &lt;- read_csv(filename, skip = 1, col_names = FALSE)</code></pre>
+<pre><code>## Rows: 572 Columns: 12</code></pre>
+<pre><code>## -- Column specification --------------------------------------------------------
 ## Delimiter: &quot;,&quot;
-## chr (2): Region, eicosenoic
-## dbl (9): ...1, Area, palmitic, palmitoleic, stearic, oleic, linoleic, linole...
-## 
+## chr  (1): X2
+## dbl (11): X1, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12</code></pre>
+<pre><code>## 
 ## i Use `spec()` to retrieve the full column specification for this data.
 ## i Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>dat</code></pre>
+<pre><code>## # A tibble: 572 x 12
+##       X1 X2             X3    X4    X5    X6    X7    X8    X9   X10   X11   X12
+##    &lt;dbl&gt; &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1     1 North-Apul~     1     1  1075    75   226  7823   672    36    60    29
+##  2     2 North-Apul~     1     1  1088    73   224  7709   781    31    61    29
+##  3     3 North-Apul~     1     1   911    54   246  8113   549    31    63    29
+##  4     4 North-Apul~     1     1   966    57   240  7952   619    50    78    35
+##  5     5 North-Apul~     1     1  1051    67   259  7771   672    50    80    46
+##  6     6 North-Apul~     1     1   911    49   268  7924   678    51    70    44
+##  7     7 North-Apul~     1     1   922    66   264  7990   618    49    56    29
+##  8     8 North-Apul~     1     1  1100    61   235  7728   734    39    64    35
+##  9     9 North-Apul~     1     1  1082    60   239  7745   709    46    83    33
+## 10    10 North-Apul~     1     1  1037    55   213  7944   633    26    52    30
+## # ... with 562 more rows</code></pre>
 <ol start="3" style="list-style-type: decimal">
 <li>A problem with the previous approach is that we don’t know what the columns represent. Type:</li>
 </ol>
 <pre class="r"><code>names(dat)</code></pre>
-<pre><code>##  [1] &quot;...1&quot;        &quot;Region&quot;      &quot;Area&quot;        &quot;palmitic&quot;    &quot;palmitoleic&quot;
-##  [6] &quot;stearic&quot;     &quot;oleic&quot;       &quot;linoleic&quot;    &quot;linolenic&quot;   &quot;arachidic&quot;  
-## [11] &quot;eicosenoic&quot;</code></pre>
+<pre><code>##  [1] &quot;X1&quot;  &quot;X2&quot;  &quot;X3&quot;  &quot;X4&quot;  &quot;X5&quot;  &quot;X6&quot;  &quot;X7&quot;  &quot;X8&quot;  &quot;X9&quot;  &quot;X10&quot; &quot;X11&quot; &quot;X12&quot;</code></pre>
 <p>to see that the names are not informative.</p>
 <p>Use the readLines function to read in just the first line (we later learn how to extract values from the output).</p>
 <pre class="r"><code>read_lines(&quot;olive.csv&quot;, n_max = 1)</code></pre>
@@ -718,8 +730,8 @@ dat &lt;- read_csv(tmp_filename)</code></pre>
 ## i Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 <pre class="r"><code>file.remove(tmp_filename)</code></pre>
 <pre><code>## Warning in file.remove(tmp_filename): 파일 &#39;C:
-## \Users\user\AppData\Local\Temp\Rtmpe2GKjB\file13a84ec65f52&#39;을 지울 수 없습니다,
-## 그 이유는 &#39;Permission denied&#39;입니다</code></pre>
+## \Users\user\AppData\Local\Temp\RtmpMDNruq\file1bc069165c&#39;을 지울 수 없습니다, 그
+## 이유는 &#39;Permission denied&#39;입니다</code></pre>
 <pre><code>## [1] FALSE</code></pre>
 </div>
 <div id="r-base-importing-functions" class="section level2">
