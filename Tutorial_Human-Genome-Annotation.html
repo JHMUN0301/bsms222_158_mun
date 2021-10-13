@@ -245,15 +245,20 @@ pre code {
 <pre class="r"><code>d = d %&gt;% as.data.frame()</code></pre>
 <p>Let’s overview few lines from the data frame, and explore what you get in this object.</p>
 <pre class="r"><code>head(d)</code></pre>
-<pre><code>## # A tibble: 6 x 9
-##   X1    X2     X3            X4    X5 X6    X7    X8    X9                      
-##   &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                   
-## 1 chr1  HAVANA gene       11869 14409 .     +     .     &quot;gene_id \&quot;ENSG00000223~
-## 2 chr1  HAVANA transcript 11869 14409 .     +     .     &quot;gene_id \&quot;ENSG00000223~
-## 3 chr1  HAVANA exon       11869 12227 .     +     .     &quot;gene_id \&quot;ENSG00000223~
-## 4 chr1  HAVANA exon       12613 12721 .     +     .     &quot;gene_id \&quot;ENSG00000223~
-## 5 chr1  HAVANA exon       13221 14409 .     +     .     &quot;gene_id \&quot;ENSG00000223~
-## 6 chr1  HAVANA transcript 12010 13670 .     +     .     &quot;gene_id \&quot;ENSG00000223~</code></pre>
+<pre><code>##     X1     X2         X3    X4    X5 X6 X7 X8
+## 1 chr1 HAVANA       gene 11869 14409  .  +  .
+## 2 chr1 HAVANA transcript 11869 14409  .  +  .
+## 3 chr1 HAVANA       exon 11869 12227  .  +  .
+## 4 chr1 HAVANA       exon 12613 12721  .  +  .
+## 5 chr1 HAVANA       exon 13221 14409  .  +  .
+## 6 chr1 HAVANA transcript 12010 13670  .  +  .
+##                                                                                                                                                                                                                                                                                                                                                                                                                         X9
+## 1                                                                                                                                                                                                                                                     gene_id &quot;ENSG00000223972.5&quot;; gene_type &quot;transcribed_unprocessed_pseudogene&quot;; gene_name &quot;DDX11L1&quot;; level 2; hgnc_id &quot;HGNC:37102&quot;; havana_gene &quot;OTTHUMG00000000961.2&quot;;
+## 2                                                                    gene_id &quot;ENSG00000223972.5&quot;; transcript_id &quot;ENST00000456328.2&quot;; gene_type &quot;transcribed_unprocessed_pseudogene&quot;; gene_name &quot;DDX11L1&quot;; transcript_type &quot;lncRNA&quot;; transcript_name &quot;DDX11L1-202&quot;; level 2; transcript_support_level &quot;1&quot;; hgnc_id &quot;HGNC:37102&quot;; tag &quot;basic&quot;; havana_gene &quot;OTTHUMG00000000961.2&quot;; havana_transcript &quot;OTTHUMT00000362751.1&quot;;
+## 3                        gene_id &quot;ENSG00000223972.5&quot;; transcript_id &quot;ENST00000456328.2&quot;; gene_type &quot;transcribed_unprocessed_pseudogene&quot;; gene_name &quot;DDX11L1&quot;; transcript_type &quot;lncRNA&quot;; transcript_name &quot;DDX11L1-202&quot;; exon_number 1; exon_id &quot;ENSE00002234944.1&quot;; level 2; transcript_support_level &quot;1&quot;; hgnc_id &quot;HGNC:37102&quot;; tag &quot;basic&quot;; havana_gene &quot;OTTHUMG00000000961.2&quot;; havana_transcript &quot;OTTHUMT00000362751.1&quot;;
+## 4                        gene_id &quot;ENSG00000223972.5&quot;; transcript_id &quot;ENST00000456328.2&quot;; gene_type &quot;transcribed_unprocessed_pseudogene&quot;; gene_name &quot;DDX11L1&quot;; transcript_type &quot;lncRNA&quot;; transcript_name &quot;DDX11L1-202&quot;; exon_number 2; exon_id &quot;ENSE00003582793.1&quot;; level 2; transcript_support_level &quot;1&quot;; hgnc_id &quot;HGNC:37102&quot;; tag &quot;basic&quot;; havana_gene &quot;OTTHUMG00000000961.2&quot;; havana_transcript &quot;OTTHUMT00000362751.1&quot;;
+## 5                        gene_id &quot;ENSG00000223972.5&quot;; transcript_id &quot;ENST00000456328.2&quot;; gene_type &quot;transcribed_unprocessed_pseudogene&quot;; gene_name &quot;DDX11L1&quot;; transcript_type &quot;lncRNA&quot;; transcript_name &quot;DDX11L1-202&quot;; exon_number 3; exon_id &quot;ENSE00002312635.1&quot;; level 2; transcript_support_level &quot;1&quot;; hgnc_id &quot;HGNC:37102&quot;; tag &quot;basic&quot;; havana_gene &quot;OTTHUMG00000000961.2&quot;; havana_transcript &quot;OTTHUMT00000362751.1&quot;;
+## 6 gene_id &quot;ENSG00000223972.5&quot;; transcript_id &quot;ENST00000450305.2&quot;; gene_type &quot;transcribed_unprocessed_pseudogene&quot;; gene_name &quot;DDX11L1&quot;; transcript_type &quot;transcribed_unprocessed_pseudogene&quot;; transcript_name &quot;DDX11L1-201&quot;; level 2; transcript_support_level &quot;NA&quot;; hgnc_id &quot;HGNC:37102&quot;; ont &quot;PGO:0000005&quot;; ont &quot;PGO:0000019&quot;; tag &quot;basic&quot;; havana_gene &quot;OTTHUMG00000000961.2&quot;; havana_transcript &quot;OTTHUMT00000002844.2&quot;;</code></pre>
 <p>One thing you can find is that there is no columns in the data frame. Let’s match which information is provided in columns. You can find the instruction page in the website (link).</p>
 <p>Based on this, you can assign a name for 9 columns. One thing to remember is you should not use space for the column name. Spacing in the column name is actually working but not a good habit for your code. So please replace a space with underscore in the column name.</p>
 <pre class="r"><code># Assign column names according to the GENCODE instruction.
@@ -311,6 +316,7 @@ cols = c(&#39;chrom&#39;, &#39;source&#39;, &#39;feature_type&#39;, &#39;start&#
 <p>As instructed in the GENCODE website, the GENCODE dataset provides a range of annotations for the feature type. You can check feature types using ____ function.</p>
 <pre class="r"><code>d %&gt;% group_by(feature_type) %&gt;% count(feature_type)</code></pre>
 <pre><code>## # A tibble: 8 x 2
+## # Groups:   feature_type [8]
 ##   feature_type        n
 ##   &lt;chr&gt;           &lt;int&gt;
 ## 1 CDS            567862
@@ -345,6 +351,7 @@ cols = c(&#39;chrom&#39;, &#39;source&#39;, &#39;feature_type&#39;, &#39;start&#
 <p>Right. Then now we count how many genes annotated with HAVANA and ENSEMBL.</p>
 <pre class="r"><code>d %&gt;% group_by(source) %&gt;% count(source)</code></pre>
 <pre><code>## # A tibble: 2 x 2
+## # Groups:   source [2]
 ##   source        n
 ##   &lt;chr&gt;     &lt;int&gt;
 ## 1 ENSEMBL  245185
@@ -453,6 +460,7 @@ trans</code></pre>
 
 s %&gt;% arrange(gene_type)</code></pre>
 <pre><code>## # A tibble: 60,603 x 3
+## # Groups:   gene_type, gene_id [60,603]
 ##    gene_type gene_id               n
 ##    &lt;chr&gt;     &lt;chr&gt;             &lt;int&gt;
 ##  1 IG_C_gene ENSG00000211592.8     1
@@ -487,6 +495,7 @@ s %&gt;% group_by(gene_type) %&gt;%
 s %&gt;% group_by(gene_type) %&gt;%
   summarise(Quantile = quantile(n, c(0.00, 0.25, 0.50, 0.75, 1.00)), &quot;%&quot; = c(0, 25, 50, 75, 100), .groups = &quot;keep&quot;)</code></pre>
 <pre><code>## # A tibble: 200 x 3
+## # Groups:   gene_type [40]
 ##    gene_type       Quantile   `%`
 ##    &lt;chr&gt;              &lt;dbl&gt; &lt;dbl&gt;
 ##  1 IG_C_gene              1     0
@@ -516,6 +525,7 @@ s %&gt;% ungroup() %&gt;%
 
 l</code></pre>
 <pre><code>## # A tibble: 60,603 x 4
+## # Groups:   seqnames, gene_type, gene_id [60,603]
 ##    seqnames gene_type       gene_id                n
 ##    &lt;fct&gt;    &lt;chr&gt;           &lt;chr&gt;              &lt;int&gt;
 ##  1 chr1     IG_V_pseudogene ENSG00000276674.1      1
@@ -550,6 +560,7 @@ l %&gt;% group_by(seqnames) %&gt;%
 l %&gt;% group_by(seqnames) %&gt;%
   summarise(Quantile = quantile(n, c(0.00, 0.25, 0.50, 0.75, 1.00)), &quot;%&quot; =c(0, 25, 50, 75, 100) ,.groups = &quot;keep&quot;)</code></pre>
 <pre><code>## # A tibble: 125 x 3
+## # Groups:   seqnames [25]
 ##    seqnames Quantile   `%`
 ##    &lt;fct&gt;       &lt;dbl&gt; &lt;dbl&gt;
 ##  1 chr1            1     0
@@ -577,10 +588,8 @@ l %&gt;% group_by(seqnames) %&gt;%
 </ol>
 <pre class="r"><code>d_26 %&gt;%
   summarise(mean = mean(width))</code></pre>
-<pre><code>## # A tibble: 1 x 1
-##    mean
-##   &lt;dbl&gt;
-## 1 4070.</code></pre>
+<pre><code>##       mean
+## 1 4069.518</code></pre>
 <ol start="2" style="list-style-type: decimal">
 <li>Is the distribution of gene length differed by autosomal and sex chromosomes? Please calculate the quantiles (0%, 25%, 50%, 75%, 100%) of the gene length for each group.</li>
 </ol>
@@ -595,6 +604,7 @@ d_chrtype %&gt;%
   group_by(chr_type) %&gt;%
   summarise(Quantile = quantile(width, c(0.00, 0.25, 0.50, 0.75, 1.00)), &quot;%&quot; = c(0, 25, 50, 75, 100), .groups = &quot;keep&quot;)</code></pre>
 <pre><code>## # A tibble: 10 x 3
+## # Groups:   chr_type [2]
 ##    chr_type  Quantile   `%`
 ##    &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt;
 ##  1 autosomal        1     0
@@ -614,6 +624,7 @@ d_chrtype %&gt;%
   group_by(gene_type) %&gt;%
   summarise(Quantile = quantile(width, c(0.00, 0.25, 0.50, 0.75, 1.00)), &quot;%&quot; = c(0, 25, 50, 75, 100), .groups = &quot;keep&quot;) </code></pre>
 <pre><code>## # A tibble: 200 x 3
+## # Groups:   gene_type [40]
 ##    gene_type       Quantile   `%`
 ##    &lt;chr&gt;              &lt;dbl&gt; &lt;dbl&gt;
 ##  1 IG_C_gene             3      0
@@ -639,6 +650,7 @@ d_chrtype %&gt;%
   filter(type == &quot;transcript&quot;) %&gt;%
   count()</code></pre>
 <pre><code>## # A tibble: 7 x 2
+## # Groups:   transcript_support_level [7]
 ##   transcript_support_level     n
 ##   &lt;chr&gt;                    &lt;int&gt;
 ## 1 1                        31801
@@ -656,6 +668,7 @@ d_chrtype %&gt;%
   filter(type == &quot;transcript&quot;) %&gt;%
   count()</code></pre>
 <pre><code>## # A tibble: 91 x 3
+## # Groups:   gene_type, transcript_support_level [91]
 ##    gene_type       transcript_support_level     n
 ##    &lt;chr&gt;           &lt;chr&gt;                    &lt;int&gt;
 ##  1 IG_C_gene       1                            1
@@ -677,6 +690,7 @@ d_chrtype %&gt;%
   filter(type == &quot;transcript&quot;) %&gt;%
   count()</code></pre>
 <pre><code>## # A tibble: 14 x 3
+## # Groups:   source, transcript_support_level [14]
 ##    source  transcript_support_level     n
 ##    &lt;fct&gt;   &lt;chr&gt;                    &lt;int&gt;
 ##  1 HAVANA  1                        29434
@@ -718,6 +732,7 @@ d_chrtype %&gt;%
   count() %&gt;% ungroup() %&gt;% group_by(gene_type) %&gt;%
   count()</code></pre>
 <pre><code>## # A tibble: 36 x 2
+## # Groups:   gene_type [36]
 ##    gene_type           n
 ##    &lt;chr&gt;           &lt;int&gt;
 ##  1 IG_C_gene          14
@@ -745,6 +760,7 @@ d_3.4.3 %&gt;%
   group_by(level) %&gt;%
   count()</code></pre>
 <pre><code>## # A tibble: 3 x 2
+## # Groups:   level [3]
 ##   level       n
 ##   &lt;chr&gt;   &lt;int&gt;
 ## 1 1      107054
@@ -757,6 +773,7 @@ d_26 %&gt;%
   group_by(level) %&gt;% 
   count()</code></pre>
 <pre><code>## # A tibble: 3 x 2
+## # Groups:   level [3]
 ##   level       n
 ##   &lt;chr&gt;   &lt;int&gt;
 ## 1 1      107054
@@ -790,6 +807,7 @@ trans %&gt;% ungroup() %&gt;%
   group_by(gene_type) %&gt;%
   summarise(Quantile = quantile(width, c(0.00, 0.25, 0.50, 0.75, 1.00)), &quot;%&quot; = c(0, 25, 50, 75, 100), .groups = &quot;keep&quot;)</code></pre>
 <pre><code>## # A tibble: 10 x 3
+## # Groups:   gene_type [2]
 ##    gene_type      Quantile   `%`
 ##    &lt;chr&gt;             &lt;dbl&gt; &lt;dbl&gt;
 ##  1 lncRNA                1     0
@@ -810,6 +828,7 @@ trans %&gt;% ungroup() %&gt;%
   group_by(seqnames) %&gt;%
   count()</code></pre>
 <pre><code>## # A tibble: 25 x 2
+## # Groups:   seqnames [25]
 ##    seqnames     n
 ##    &lt;fct&gt;    &lt;int&gt;
 ##  1 chr1      9827
@@ -833,6 +852,7 @@ trans %&gt;% ungroup() %&gt;%
   group_by(seqnames) %&gt;%
   count()</code></pre>
 <pre><code>## # A tibble: 25 x 2
+## # Groups:   seqnames [25]
 ##    seqnames     n
 ##    &lt;fct&gt;    &lt;int&gt;
 ##  1 chr1      5471
@@ -867,6 +887,7 @@ trans %&gt;% ungroup() %&gt;%
   group_by(seqnames, gene_type) %&gt;%
   count()</code></pre>
 <pre><code>## # A tibble: 49 x 3
+## # Groups:   seqnames, gene_type [49]
 ##    seqnames gene_type          n
 ##    &lt;fct&gt;    &lt;chr&gt;          &lt;int&gt;
 ##  1 chr1     lncRNA          1416
