@@ -407,12 +407,10 @@ d2$transcript_support_level &lt;- as.character(do.call(rbind.data.frame,
 <li>Computes the number of transcripts per gene. What is the mean number of transcripts per gene? What is the quantile (25%, 50%, 75%) for these numbers? Which gene has the greatest number of transcript?</li>
 </ol>
 <pre class="r"><code>library(dplyr)
-d_26 &lt;- as.data.frame(d_26)
-d_id &lt;- d_26 %&gt;%
-  select(seqnames, source, type, start, end, score, strand, phase, gene_id)</code></pre>
-<pre class="r"><code>trans &lt;- d_id %&gt;% group_by(gene_id) %&gt;%
+d_26 &lt;- as.data.frame(d_26)</code></pre>
+<pre class="r"><code>trans &lt;- d_26 %&gt;% group_by(gene_id) %&gt;%
   filter(type == &quot;transcript&quot;) %&gt;%
-  count()
+  count() %&gt;% ungroup()
 
 trans</code></pre>
 <pre><code>## # A tibble: 60,603 x 2
@@ -429,21 +427,31 @@ trans</code></pre>
 ##  9 ENSG00000001084.13     5
 ## 10 ENSG00000001167.14     2
 ## # ... with 60,593 more rows</code></pre>
-<pre class="r"><code>mean(trans$n)</code></pre>
-<pre><code>## [1] 1.7861</code></pre>
-<pre class="r"><code>c &lt;- trans$n
-quantile(c, c(0.25, 0.50, 0.75))</code></pre>
-<pre><code>## 25% 50% 75% 
-##   1   1   2</code></pre>
-<pre class="r"><code>trans$gene_id[[which.max(trans$n)]]</code></pre>
-<pre><code>## [1] &quot;ENSG00000109339.22&quot;</code></pre>
+<pre class="r"><code>trans %&gt;% summarise(mean = mean(n))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##    mean
+##   &lt;dbl&gt;
+## 1  1.79</code></pre>
+<pre class="r"><code>trans %&gt;% summarize(Quantile = quantile(n, c(0.25, 0.50, 0.75)), &quot;%&quot; = c(25, 50, 75))</code></pre>
+<pre><code>## # A tibble: 3 x 2
+##   Quantile   `%`
+##      &lt;dbl&gt; &lt;dbl&gt;
+## 1        1    25
+## 2        1    50
+## 3        2    75</code></pre>
+<pre class="r"><code>trans %&gt;% summarise(max = gene_id[which.max(n)])</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   max               
+##   &lt;chr&gt;             
+## 1 ENSG00000109339.22</code></pre>
 <ol start="2" style="list-style-type: decimal">
 <li>Compute the number of transcripts per gene among gene biotypes. For example, compare the number of transcript per gene between protein-coding genes, long noncoding genes, pseudogenes.</li>
 </ol>
 <pre class="r"><code>s &lt;- d_26 %&gt;% group_by(gene_type, gene_id) %&gt;% 
   filter(type == &quot;transcript&quot;) %&gt;%
-  count()</code></pre>
-<pre class="r"><code>s %&gt;% arrange(gene_type)</code></pre>
+  count()
+
+s %&gt;% arrange(gene_type)</code></pre>
 <pre><code>## # A tibble: 60,603 x 3
 ##    gene_type gene_id               n
 ##    &lt;chr&gt;     &lt;chr&gt;             &lt;int&gt;
@@ -477,21 +485,28 @@ s %&gt;% group_by(gene_type) %&gt;%
 ## # ... with 30 more rows</code></pre>
 <pre class="r"><code>#quantile(0%, 25%, 50%, 75%, 100%)
 s %&gt;% group_by(gene_type) %&gt;%
-  summarise(Quantile = quantile(n, c(0.00, 0.25, 0.50, 0.75, 1.00)), q = c(0.00, 0.25, 0.50, 0.75, 1.00), .groups = &quot;keep&quot;)</code></pre>
+  summarise(Quantile = quantile(n, c(0.00, 0.25, 0.50, 0.75, 1.00)), &quot;%&quot; = c(0, 25, 50, 75, 100), .groups = &quot;keep&quot;)</code></pre>
 <pre><code>## # A tibble: 200 x 3
-##    gene_type       Quantile     q
+##    gene_type       Quantile   `%`
 ##    &lt;chr&gt;              &lt;dbl&gt; &lt;dbl&gt;
-##  1 IG_C_gene              1  0   
-##  2 IG_C_gene              1  0.25
-##  3 IG_C_gene              1  0.5 
-##  4 IG_C_gene              1  0.75
-##  5 IG_C_gene              1  1   
-##  6 IG_C_pseudogene        1  0   
-##  7 IG_C_pseudogene        1  0.25
-##  8 IG_C_pseudogene        1  0.5 
-##  9 IG_C_pseudogene        1  0.75
-## 10 IG_C_pseudogene        1  1   
+##  1 IG_C_gene              1     0
+##  2 IG_C_gene              1    25
+##  3 IG_C_gene              1    50
+##  4 IG_C_gene              1    75
+##  5 IG_C_gene              1   100
+##  6 IG_C_pseudogene        1     0
+##  7 IG_C_pseudogene        1    25
+##  8 IG_C_pseudogene        1    50
+##  9 IG_C_pseudogene        1    75
+## 10 IG_C_pseudogene        1   100
 ## # ... with 190 more rows</code></pre>
+<pre class="r"><code>#max
+s %&gt;% ungroup() %&gt;%
+  top_n(1, n)</code></pre>
+<pre><code>## # A tibble: 1 x 3
+##   gene_type      gene_id                n
+##   &lt;chr&gt;          &lt;chr&gt;              &lt;int&gt;
+## 1 protein_coding ENSG00000109339.22    87</code></pre>
 <ol start="3" style="list-style-type: decimal">
 <li>Final task is to compute the number of transcripts per gene per chromosome.</li>
 </ol>
@@ -533,29 +548,39 @@ l %&gt;% group_by(seqnames) %&gt;%
 ## # ... with 15 more rows</code></pre>
 <pre class="r"><code>#quantile(0%, 25%, 50%, 75%, 100%)
 l %&gt;% group_by(seqnames) %&gt;%
-  summarise(Quantile = quantile(n, c(0.00, 0.25, 0.50, 0.75, 1.00)), q =c(0.00, 0.25, 0.50, 0.75, 1.00) ,.groups = &quot;keep&quot;)</code></pre>
+  summarise(Quantile = quantile(n, c(0.00, 0.25, 0.50, 0.75, 1.00)), &quot;%&quot; =c(0, 25, 50, 75, 100) ,.groups = &quot;keep&quot;)</code></pre>
 <pre><code>## # A tibble: 125 x 3
-##    seqnames Quantile     q
+##    seqnames Quantile   `%`
 ##    &lt;fct&gt;       &lt;dbl&gt; &lt;dbl&gt;
-##  1 chr1            1  0   
-##  2 chr1            1  0.25
-##  3 chr1            1  0.5 
-##  4 chr1            2  0.75
-##  5 chr1           33  1   
-##  6 chr2            1  0   
-##  7 chr2            1  0.25
-##  8 chr2            1  0.5 
-##  9 chr2            2  0.75
-## 10 chr2           31  1   
+##  1 chr1            1     0
+##  2 chr1            1    25
+##  3 chr1            1    50
+##  4 chr1            2    75
+##  5 chr1           33   100
+##  6 chr2            1     0
+##  7 chr2            1    25
+##  8 chr2            1    50
+##  9 chr2            2    75
+## 10 chr2           31   100
 ## # ... with 115 more rows</code></pre>
+<pre class="r"><code>l %&gt;% ungroup() %&gt;%
+  top_n(1,n)</code></pre>
+<pre><code>## # A tibble: 1 x 4
+##   seqnames gene_type      gene_id                n
+##   &lt;fct&gt;    &lt;chr&gt;          &lt;chr&gt;              &lt;int&gt;
+## 1 chr4     protein_coding ENSG00000109339.22    87</code></pre>
 </div>
 <div id="gene-length-in-the-gencode" class="section level2">
 <h2>3.2. Gene length in the GENCODE</h2>
 <ol style="list-style-type: decimal">
 <li>What is the average length of human genes?</li>
 </ol>
-<pre class="r"><code>mean(d_26$width)</code></pre>
-<pre><code>## [1] 4069.518</code></pre>
+<pre class="r"><code>d_26 %&gt;%
+  summarise(mean = mean(width))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##    mean
+##   &lt;dbl&gt;
+## 1 4070.</code></pre>
 <ol start="2" style="list-style-type: decimal">
 <li>Is the distribution of gene length differed by autosomal and sex chromosomes? Please calculate the quantiles (0%, 25%, 50%, 75%, 100%) of the gene length for each group.</li>
 </ol>
@@ -564,42 +589,43 @@ l %&gt;% group_by(seqnames) %&gt;%
   mutate(chr_type = case_when(
     seqnames %in% c(&quot;chrX&quot;, &quot;chrY&quot;) ~ &quot;sex&quot;,
     TRUE ~ &quot;autosomal&quot;
-  ))</code></pre>
-<pre class="r"><code>d_chrtype %&gt;% group_by(chr_type) %&gt;%
-  summarise(Quantile = quantile(width, c(0.00, 0.25, 0.50, 0.75, 1.00)), .groups = &quot;keep&quot;) %&gt;%
-  mutate(q = c(0.00, 0.25, 0.50, 0.75, 1.00))</code></pre>
+  ))
+
+d_chrtype %&gt;% 
+  group_by(chr_type) %&gt;%
+  summarise(Quantile = quantile(width, c(0.00, 0.25, 0.50, 0.75, 1.00)), &quot;%&quot; = c(0, 25, 50, 75, 100), .groups = &quot;keep&quot;)</code></pre>
 <pre><code>## # A tibble: 10 x 3
-##    chr_type  Quantile     q
+##    chr_type  Quantile   `%`
 ##    &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt;
-##  1 autosomal        1  0   
-##  2 autosomal       80  0.25
-##  3 autosomal      129  0.5 
-##  4 autosomal      222  0.75
-##  5 autosomal  2473537  1   
-##  6 sex              1  0   
-##  7 sex             78  0.25
-##  8 sex            127  0.5 
-##  9 sex            230  0.75
-## 10 sex        2241765  1</code></pre>
+##  1 autosomal        1     0
+##  2 autosomal       80    25
+##  3 autosomal      129    50
+##  4 autosomal      222    75
+##  5 autosomal  2473537   100
+##  6 sex              1     0
+##  7 sex             78    25
+##  8 sex            127    50
+##  9 sex            230    75
+## 10 sex        2241765   100</code></pre>
 <ol start="3" style="list-style-type: decimal">
 <li>Is the distribution of gene length differed by gene biotype? Please calculate the quantiles (0%, 25%, 50%, 75%, 100%) of the gene length for each group.</li>
 </ol>
-<pre class="r"><code>d_26%&gt;% group_by(gene_type) %&gt;%
-  summarise(Quantile = quantile(width, c(0.00, 0.25, 0.50, 0.75, 1.00)), .groups = &quot;keep&quot;) %&gt;%
-  mutate(q = c(0.00, 0.25, 0.50, 0.75, 1.00))</code></pre>
+<pre class="r"><code>d_26 %&gt;% 
+  group_by(gene_type) %&gt;%
+  summarise(Quantile = quantile(width, c(0.00, 0.25, 0.50, 0.75, 1.00)), &quot;%&quot; = c(0, 25, 50, 75, 100), .groups = &quot;keep&quot;) </code></pre>
 <pre><code>## # A tibble: 200 x 3
-##    gene_type       Quantile     q
+##    gene_type       Quantile   `%`
 ##    &lt;chr&gt;              &lt;dbl&gt; &lt;dbl&gt;
-##  1 IG_C_gene             3   0   
-##  2 IG_C_gene            92   0.25
-##  3 IG_C_gene           312.  0.5 
-##  4 IG_C_gene           336   0.75
-##  5 IG_C_gene          8914   1   
-##  6 IG_C_pseudogene      34   0   
-##  7 IG_C_pseudogene     293   0.25
-##  8 IG_C_pseudogene     316   0.5 
-##  9 IG_C_pseudogene     424   0.75
-## 10 IG_C_pseudogene    5211   1   
+##  1 IG_C_gene             3      0
+##  2 IG_C_gene            92     25
+##  3 IG_C_gene           312.    50
+##  4 IG_C_gene           336     75
+##  5 IG_C_gene          8914    100
+##  6 IG_C_pseudogene      34      0
+##  7 IG_C_pseudogene     293     25
+##  8 IG_C_pseudogene     316     50
+##  9 IG_C_pseudogene     424     75
+## 10 IG_C_pseudogene    5211    100
 ## # ... with 190 more rows</code></pre>
 </div>
 <div id="transcript-support-levels-tsl" class="section level2">
@@ -608,7 +634,8 @@ l %&gt;% group_by(seqnames) %&gt;%
 <ol style="list-style-type: decimal">
 <li>With transcript, how many transcripts are categorized for each TSL?</li>
 </ol>
-<pre class="r"><code>d_26 %&gt;% group_by(transcript_support_level) %&gt;%
+<pre class="r"><code>d_26 %&gt;% 
+  group_by(transcript_support_level) %&gt;%
   filter(type == &quot;transcript&quot;) %&gt;%
   count()</code></pre>
 <pre><code>## # A tibble: 7 x 2
@@ -624,7 +651,8 @@ l %&gt;% group_by(seqnames) %&gt;%
 <ol start="2" style="list-style-type: decimal">
 <li>From the first question, please count the number of transcript for each TSL by gene biotype.</li>
 </ol>
-<pre class="r"><code>d_26 %&gt;% group_by(gene_type, transcript_support_level) %&gt;%
+<pre class="r"><code>d_26 %&gt;% 
+  group_by(gene_type, transcript_support_level) %&gt;%
   filter(type == &quot;transcript&quot;) %&gt;%
   count()</code></pre>
 <pre><code>## # A tibble: 91 x 3
@@ -644,7 +672,8 @@ l %&gt;% group_by(seqnames) %&gt;%
 <ol start="3" style="list-style-type: decimal">
 <li>From the first question, please count the number of transcript for each TSL by source.</li>
 </ol>
-<pre class="r"><code>d_26 %&gt;% group_by(source, transcript_support_level) %&gt;%
+<pre class="r"><code>d_26 %&gt;% 
+  group_by(source, transcript_support_level) %&gt;%
   filter(type == &quot;transcript&quot;) %&gt;%
   count()</code></pre>
 <pre><code>## # A tibble: 14 x 3
@@ -683,7 +712,8 @@ l %&gt;% group_by(seqnames) %&gt;%
 <ol start="2" style="list-style-type: decimal">
 <li>Please count the number of hgnc by gene biotypes.</li>
 </ol>
-<pre class="r"><code>d_3.4 %&gt;% filter(isHgnc == &quot;1&quot;) %&gt;%
+<pre class="r"><code>d_3.4 %&gt;% 
+  filter(isHgnc == &quot;1&quot;) %&gt;%
   group_by(gene_id, gene_type) %&gt;% 
   count() %&gt;% ungroup() %&gt;% group_by(gene_type) %&gt;%
   count()</code></pre>
@@ -722,8 +752,10 @@ d_3.4.3 %&gt;%
 ## 3 3      237265</code></pre>
 <pre class="r"><code>#without creating &quot;isHgnc&quot; column, using grepl()
 
-d_26 %&gt;% filter(grepl(&quot;HGNC&quot;, d_26$hgnc_id) == TRUE) %&gt;% 
-  group_by(level) %&gt;% count()</code></pre>
+d_26 %&gt;% 
+  filter(grepl(&quot;HGNC&quot;, d_26$hgnc_id) == TRUE) %&gt;% 
+  group_by(level) %&gt;% 
+  count()</code></pre>
 <pre><code>## # A tibble: 3 x 2
 ##   level       n
 ##   &lt;chr&gt;   &lt;int&gt;
@@ -736,28 +768,40 @@ d_26 %&gt;% filter(grepl(&quot;HGNC&quot;, d_26$hgnc_id) == TRUE) %&gt;%
 <ol style="list-style-type: decimal">
 <li>Which gene has the largest number of transcripts?</li>
 </ol>
-<pre class="r"><code>trans$gene_id[[which.max(trans$n)]]</code></pre>
-<pre><code>## [1] &quot;ENSG00000109339.22&quot;</code></pre>
+<pre class="r"><code>#which.max
+trans %&gt;%
+  summarise(max = gene_id[which.max(n)])</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   max               
+##   &lt;chr&gt;             
+## 1 ENSG00000109339.22</code></pre>
+<pre class="r"><code>#top_n
+trans %&gt;% ungroup() %&gt;%
+  top_n(1,n)</code></pre>
+<pre><code>## # A tibble: 1 x 2
+##   gene_id                n
+##   &lt;chr&gt;              &lt;int&gt;
+## 1 ENSG00000109339.22    87</code></pre>
 <ol start="2" style="list-style-type: decimal">
 <li>Please calculate the quantiles (0%, 25%, 50%, 75%, 100%) of the gene length for protein coding genes and long noncoding genes.</li>
 </ol>
-<pre class="r"><code>d_26 %&gt;% filter(gene_type %in% c(&quot;protein_coding&quot;, &quot;lncRNA&quot;)) %&gt;%
-group_by(gene_type) %&gt;%
-  summarise(Quantile = quantile(width, c(0.00, 0.25, 0.50, 0.75, 1.00)), .groups = &quot;keep&quot;) %&gt;%
-  mutate(q = c(0.00, 0.25, 0.50, 0.75, 1.00))</code></pre>
+<pre class="r"><code>d_26 %&gt;% 
+  filter(gene_type %in% c(&quot;protein_coding&quot;, &quot;lncRNA&quot;)) %&gt;%
+  group_by(gene_type) %&gt;%
+  summarise(Quantile = quantile(width, c(0.00, 0.25, 0.50, 0.75, 1.00)), &quot;%&quot; = c(0, 25, 50, 75, 100), .groups = &quot;keep&quot;)</code></pre>
 <pre><code>## # A tibble: 10 x 3
-##    gene_type      Quantile     q
+##    gene_type      Quantile   `%`
 ##    &lt;chr&gt;             &lt;dbl&gt; &lt;dbl&gt;
-##  1 lncRNA                1  0   
-##  2 lncRNA              126  0.25
-##  3 lncRNA              339  0.5 
-##  4 lncRNA             2658  0.75
-##  5 lncRNA          1375317  1   
-##  6 protein_coding        1  0   
-##  7 protein_coding       76  0.25
-##  8 protein_coding      123  0.5 
-##  9 protein_coding      193  0.75
-## 10 protein_coding  2473537  1</code></pre>
+##  1 lncRNA                1     0
+##  2 lncRNA              126    25
+##  3 lncRNA              339    50
+##  4 lncRNA             2658    75
+##  5 lncRNA          1375317   100
+##  6 protein_coding        1     0
+##  7 protein_coding       76    25
+##  8 protein_coding      123    50
+##  9 protein_coding      193    75
+## 10 protein_coding  2473537   100</code></pre>
 <ol start="3" style="list-style-type: decimal">
 <li>Please count the number of transcripts by chromosomes.</li>
 </ol>
@@ -818,7 +862,8 @@ group_by(gene_type) %&gt;%
 <ol start="3" style="list-style-type: decimal">
 <li>Please divide the genes into groups ‘protein coding’ and ‘long noncoding’, and then compare the number of genes in each chromosomes within groups.</li>
 </ol>
-<pre class="r"><code>d_26 %&gt;% filter(type == &quot;gene&quot; &amp; gene_type %in% c(&quot;protein_coding&quot;, &quot;lncRNA&quot;)) %&gt;%
+<pre class="r"><code>d_26 %&gt;% 
+  filter(type == &quot;gene&quot; &amp; gene_type %in% c(&quot;protein_coding&quot;, &quot;lncRNA&quot;)) %&gt;%
   group_by(seqnames, gene_type) %&gt;%
   count()</code></pre>
 <pre><code>## # A tibble: 49 x 3
