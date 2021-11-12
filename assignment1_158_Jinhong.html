@@ -176,24 +176,20 @@ pre code {
 <li><a href="#ii-2-figure-1">II-2 Figure 1</a></li>
 <li><a href="#ii-3-figure-2">II-3 Figure 2</a></li>
 </ul></li>
-<li><a href="#iii-consclusion-discission">III Consclusion &amp; Discission</a>
-<ul>
-<li><a href="#iii-1-figure-1">III-1 Figure 1</a></li>
-<li><a href="#iii-2-figure-2">III-2 Figure 2</a></li>
-</ul></li>
+<li><a href="#iii-results-discussion">III Results &amp; Discussion</a></li>
+<li><a href="#iv-references">IV References</a></li>
 </ul>
 </div>
 
 <div id="i.-introduction" class="section level1">
 <h1>I. Introduction</h1>
-<p>Ahr signaling pathway is ~~~~(뭔지, 뭐 포함돼있는지, 어떤 작용하는지, 어떻게 작동/활성화되는지, 논문에서는 어떻게 다뤄졌는지) 논문에서 깊게 다뤄지지 않았는데, anti-apoptosis를 통해 tumorigenesis에 기여할 수 있다는 부분을 보고 흥미가 생겨서 data visualization의 주제로 선정했다</p>
-<p>@@ warning 끌까? 어떻게 끄지 @@ sandstone/simplex/</p>
+<p>Ahr is a transcription factor that activates xenobiotic metabolism, histone modification(an inportnatn step in DNA methylation), and ultimately, tumorigenesis(Tsay et al.(2013)). It is known to be activated by some ligands, including PAHs and dioxins from cigarette smoking. At its inactivate state, without ligand binding, Ahr is bound with HSP90, AIP, and PTGE3. When dioxin binds to Ahr, other 3 components dissociates and let Ahr bind with ARNT. Ahr-ARNT complex then translocates to nucleus and promote transcription of several genes, such as CYP1A1, CYP1B1, etc. The effect of Ahr pathway and its outputs on tumorigenesis is not fully described yet, and many studies are carried out these days to find out the mechanism and utilize for treatments and diagnosis. In our topic paper(Chen et al.(2020)), Ahr pathway was introduced as contributor to carcinogenesis, related to PAH, and somehow induce anti-apoptosis. Since there was little informations about Ahr pathway in the paper, I was curious about the pathway’s functions and characteristics. It was difficult to see the activation of Ahr and related genes through conformational change by ligand binding with affordable data, I chose to visualize expression of Ahr downstream genes at proteomic and transcriptomic level and see the difference among patient’s age, gender, ethnicity, etc.</p>
 </div>
 <div id="ii.-visualization" class="section level1">
 <h1>II. Visualization</h1>
 <div id="ii-1-loadingmanipulating-data" class="section level2">
 <h2>II-1 Loading/Manipulating data</h2>
-<p>To see the characteristics of Ahr downstream genes among patients, comparing cohort from the paper with other cohort would be helpful. So I used tables from Chen et al.(2020), which has informations about Taiwan cohort(hencforth TW), and Gillette et al.(2020), which cover geographically diverse population(henceforth g; general). The tables I used include patients’ clinical data(TW-S1A, g-S1A), SNV informations(TW-S1C, g-S1A), gene expressions at transcriptomic level(TW-S1D, g-S2D), and gene expressions at proteomic level(TW-S1E, g-S3A).</p>
+<p>To see the characteristics of Ahr downstream genes among patients, comparing cohort from the paper with other cohort would be helpful. So I used tables from Chen et al.(2020), which has informations about Taiwan cohort(hencforth TW), and Gillette et al.(2020), which cover geographically diverse population(henceforth g; general). The tables I used include patients’ clinical data(TW-S1A, g-S1A), SNV informations(TW-S1C, g-S1A), gene expressions at transcriptomic level(TW-S1D, g-S2D), and gene expressions at proteomic level(TW-S1E, g-S3A). Data from Chen et al.(2020) had Log2T/N values, which represent the relative gene expression of tumors, but Gillette et al.(2020) only had values of expression for tumors and NATs, respectively. So I had to control the data and calculate Log2T/N value.</p>
 <pre class="r"><code>#load packages I need
 library(tibble)
 library(dplyr)</code></pre>
@@ -244,7 +240,7 @@ S1D &lt;- as.data.frame(read_excel(&quot;C:/Users/user/Desktop/github/bsms222_15
 
 S1E &lt;- as.data.frame(read_excel(&quot;C:/Users/user/Desktop/github/bsms222_158_mun//1-s2.0-S0092867420307431-mmc1.xlsx&quot;, sheet = &quot;Table S1E_ProteomeLog2TN&quot;, na = &quot;NA&quot;))
 
-S1C &lt;- as.data.frame(read_excel(&quot;C:/Users/user/Desktop/github/bsms222_158_mun//1-s2.0-S0092867420307431-mmc1.xlsx&quot;, sheet = &quot;Table S1C_SNV&quot;, na = &quot;NA&quot;))</code></pre>
+gS1C &lt;- as.data.frame(read_excel(&quot;C:/Users/user/Desktop/github/bsms222_158_mun//1-s2.0-S0092867420307431-mmc1.xlsx&quot;, sheet = &quot;Table S1C_SNV&quot;, na = &quot;NA&quot;))</code></pre>
 <pre><code>## New names:
 ## * `` -&gt; ...1
 ## * `` -&gt; ...2
@@ -275,7 +271,7 @@ gS2D &lt;- as.data.frame(read_excel(&quot;C:/Users/user/Desktop/github/bsms222_1
 S1A &lt;- S1A %&gt;% 
   rename(&quot;variable&quot; = ID)
 
-S1C &lt;- S1C %&gt;%
+gS1C &lt;- gS1C %&gt;%
   row_to_names(row_number = 1) %&gt;%
   subset(select = -c(`COUNT`, `%`)) %&gt;%
   pivot_longer(!Gene,
@@ -316,7 +312,7 @@ gS3A &lt;- gS3A %&gt;%
 </div>
 <div id="ii-2-figure-1" class="section level2">
 <h2>II-2 Figure 1</h2>
-<p>Figure 1 will be density_ridges plot for expression of Ahr dowstream genes at transcriptomic/proteomic level.</p>
+<p>Figure 1 will be density_ridges plot for expression of Ahr dowstream genes at transcriptomic/proteomic level. I used ‘facet_grid’ to describe the expressions separated by level and patients’ characteristics, and used scale_fill_gradient_2 to fill the density plots with red to blue color, which makes the color change more noticable. Also, I drew a vertical line at x=0 by geom_vline to make it easier to see whether the expression is showing the tendency of higher expression or lower expression, compared to NATs. geom_point on x axis is included to help the viewers to see the distribution and density more easily, and it can show values that did not draw a density plot because of small number. At the end, I used plot_grid from cowplot to bring all the plots I drew together.</p>
 <pre class="r"><code>#Make dataframe with patients&#39; clinical data and Ahr downstream genes for Ahr downstream genes
 de &lt;-S1E %&gt;%
   filter(gene %in% c(&quot;CYP1A1&quot;, &quot;CYP1B1&quot;, &quot;GSTA1&quot;, &quot;CDA&quot;))
@@ -539,7 +535,7 @@ g_AHR_downstream &lt;- plot_grid(g_total, g_categorized, labels = c(&quot;C&quot
 <pre class="r"><code>#Bring all 4 plots together
 
 expression_TW_general &lt;- plot_grid(AHR_downstream, g_AHR_downstream, ncol = 1)</code></pre>
-<p>이렇게 하니까 ~~~ bimodal~~ 한게 나타났다 그래서 그부분만 빼서 나타내봤다</p>
+<p>After making the plots above, in general cohort, I noticed that distribution of expression looked quite bimodal in GSTA1 gene at proteomic level. I made an assumption that it would be because of difference between Asians and non-Asians, since TW cohort showed high expression tendency. So I drew another density plot for that and a boxplot that helps to see the difference between Asian and non-Asian.</p>
 <pre class="r"><code>#density plot for GSTA1(Asian vs Non-Asian)
 
 dens &lt;- gAHRdownstream %&gt;%
@@ -610,22 +606,22 @@ GSTA1 &lt;- plot_grid(dens, box, ncol = 2, labels = c(&quot;E&quot;))</code></pr
 fig1 &lt;- plot_grid(expression_TW_general, GSTA1, ncol = 1, rel_heights = c(4, 1))
 ggsave(&quot;Figure1.pdf&quot;, fig1, width = 12, height = 16)</code></pre>
 <blockquote>
-<p>Figure 1 is about ~~~. Plot A and C shows the relative expression of Ahr downstream genes of TW cohort and g cohort, respectively. Plot B and D shows the relative expression of Ahr downstream genes of TW cohort and g cohort, respectively, categorized by patients’ age/smoking status/gender. I used scale_fill_gradient_2 so that 눈에 잘띄는 red~blue 쓸 수 있게. Also, I drew a vertical line at x=0 by geom_vline to make it easier to see whether the expression이 높은/낮은 경향을 보이는지. geom_point on x axis is to helps the viewers to see the 분포/밀집도 easily, and can show values that did not draw a density plot because of small number. Plot E shows the expression of GSTA1 gene, comparing Asian with Non-Asian, male with female. The boxplot helps to see the 경향성 clearly.</p>
+<p>Figure 1 shows the expressions of Ahr donwstream genes(GSTA1, CDA, CYP1B1, CYP1A1). Plot A and C shows the relative expressions of Ahr downstream genes from TW cohort and g cohort, respectively. Plot B and D shows the relative expression of Ahr downstream genes from TW cohort and g cohort, respectively, categorized by patients’ age/smoking status/gender. Plot E shows the expression of GSTA1 gene, comparing Asian with Non-Asian, and male with female. The boxplot helps to see the difference between Asian males and non-Asian males clearly. The density plots displayed several characters of each genes. In TW cohort, genes showed relatively high gene expression tendency, exept for CYP1A1 gene. CYP1A1 gene showed relatively low expression tendency at every cases. It was unable to see CYP1A1 expression at proteomic level by categories because the amount of data was not enough to compose a density plot. There was no significant difference between patient categories, and the expression tendency mostly followed that of total cohort. In general cohort, overall expression tendency was a little lower than TW cohort. CYP1A1/CDA expression tendency was simillar with TW cohort, but for GSTA1, g cohort showed much lower expression tendency, with quite bimodal distribution. To look for the cause, I drew density plots just for GSTA1 expression, comparing Asians and non-Asians. The plot showed that Asians, especially Asian males had particularly many cases with lower expression. The boxplot next to it shows the difference of expression tendency among Asian males and non-Asian males.(Figure at the end)</p>
 </blockquote>
 </div>
 <div id="ii-3-figure-2" class="section level2">
 <h2>II-3 Figure 2</h2>
-<p>Figure 2 will be heatmaps for Ahr dowmstream genes’ expression, with patiens’ age/smoking stats/stage/TP53 mutation/EGFR mutation informations.</p>
+<p>Figure 2 will be heatmaps for Ahr dowmstream genes’ expression, with patients’ age/smoking status/stage/TP53 mutation/EGFR mutation informations. I used geom_tile to draw the heatmap, and geom_xsidetile for age/smoking status/TP53 mutation/EGFR mutation informations. To put each information in one bar, I made dummy columns for names of each information and filled them by real columns that have the real information. Since I used this uncertified method, I wasn’t able to control the legends. So I extracted legends from each information and put it next to the heatmap without legends by plot_grid.</p>
 <pre class="r"><code>#Merge TP53 mutation information to previous dataframe
 
-tp53 &lt;- S1C %&gt;%
+tp53 &lt;- gS1C %&gt;%
+  filter(Gene == &quot;TP53&quot;) %&gt;%
   mutate(TP53 = case_when(
     is.na(SNV) ~ &quot;TP53_WT&quot;,
     TRUE ~ &quot;TP53_mutated&quot;
   )) %&gt;%
-  subset(select = -c(SNV)) %&gt;%
-  rename(&quot;gene&quot; = &quot;Gene&quot;)
-TWDownstream_DE &lt;- merge(TWDownstream_DE, tp53, by = c(&quot;variable&quot;, &quot;gene&quot;))
+  subset(select = -c(SNV))
+TWDownstream_DE &lt;- merge(TWDownstream_DE, tp53, by = &quot;variable&quot;)
 
 #Draw heatmap for TW cohort
 
@@ -782,7 +778,6 @@ legend_A &lt;- get_legend(
     ggplot() +
     geom_tile(aes(x = variable, y = age, fill = Age)) +
     scale_fill_manual(values = c(&quot;wheat3&quot;, &quot;wheat1&quot;)))
-    
 
 legends &lt;- plot_grid(legend_S, legend_C, legend_A, legend_E, legend_T, ncol = 1)
 
@@ -795,18 +790,22 @@ fig2 &lt;- plot_grid(TWgtile, legends, byrow = TRUE, rel_widths = c(6.6,1))
 
 ggsave(&quot;Figure2.pdf&quot;, fig2, width = 12, height = 10)</code></pre>
 <blockquote>
-<p>Figure 2 is heatmap for Ahr downstream gene expression of TW and g cohort at transcriptomic/proteomic level. The heatmap is drawn with geom_tile. Stage, smoking status, age, EGFR mutation, TP53 mutation informations are included by geom_xsidetile, and each variables are displayed by color. Large grey 구간 is NAs</p>
+<p>Figure 2 is heatmap for Ahr downstream gene expression of TW and g cohort at transcriptomic/proteomic level. Most of the TW cohort patients were early stage(IA or IB), nonsmokers, and had some kind of EGFR mutation such as L858R mutation, exon19del muation. For general cohort’s patients, there were much more of them with late stages, smoking history, and TP53 mutations.</p>
 </blockquote>
 </div>
 </div>
-<div id="iii-consclusion-discission" class="section level1">
-<h1>III Consclusion &amp; Discission</h1>
-<div id="iii-1-figure-1" class="section level3">
-<h3>III-1 Figure 1</h3>
+<div id="iii-results-discussion" class="section level1">
+<h1>III Results &amp; Discussion</h1>
+<p>As you can see from Figure 1, genes except for CYP1A1 showed higher expression tendency. According to other studies, AhR signaling pathway is tightly controlled by an intrinsic negative feedback mechanism. More precisely, AhR ligands facilitate their own degradation by inducing expression and activity of the AhR gene target CYP1A1(Manzella et al(2020)). This can lead to an assumtion that LUAD cells have gone through changes that inhibits CYP1A1 expression to block negtative feedback and let Ahr signaling be activated constantly. TW cohort and general cohort had low expression of CYP1A1 in common, so this could be the hallmark for LUAD in human being. Study with other cancer types with this subject is needed to confirm this assumption. In general cohort, tendency of CYP1A1 was similar with TW cohort, but GSTA1, CDA, CYP1B1’s expressions seemed to be a bit lower than TW cohort. With CDA and CYP1B1, relative expression at both levels of total cohort formed normal distribution-like graph, while TW cohort displayed biased graph to the right. This could mean that CDA and CYP1B1 expression has nothing to do with LUAD in g cohort. This is because stochastic phenomenons tend to draw normal distribution. With fig 1E, Asian male had relatively more cases with lower expression. This does not match the observation from fig 1A and B, that TW cohort(Asian) shows higher expression tendency, this may be due to difference between environmental difference between TW cohort Asians and g cohort Asians, rather than by ethnicity.</p>
+<p>With figure 2, I looked for correlations between expression and additional information in TW cohort, and there were some correlations, but it was difficult to find significant correlations that might be useful, and large number of NAs made it much more difficult at proteomic level. IA stage of TW cohort patients mostly had high GSTA1 expression at transcriptomic level and did not have TP53 mutation. The correlation between age, TP53 mutation, and GSTA1 expression was visible at g cohort. Patients with younger age and TP53 mutation showed low expression at both levels, and older patients with no TP53 mutations tended to show higher expression. Other genes had too many NAs or values close to 0, so it was difficult to find correlations. These correlations I found from the plots might contribute to diagnoses or treatments like the findings from Chen et al.(2020), but the quality and certainty is quite different.</p>
 </div>
-<div id="iii-2-figure-2" class="section level3">
-<h3>III-2 Figure 2</h3>
-</div>
+<div id="iv-references" class="section level1">
+<h1>IV References</h1>
+<p>Yi-Ju Chen, Theodoros I. Roumeliotis, Ya-Hsuan Chang,…, Proteogenomics of Non-smoking Lung Cancer in East Asia Delineates Molecular Signatures of Pathogenesis and Progression, Cell, Volume 182, Issue 1, 2020, Pages 226-244.e17</p>
+<p>Gillette MA, Satpathy S, Cao S, et al. Proteogenomic Characterization Reveals Therapeutic Vulnerabilities in Lung Adenocarcinoma. Cell. 2020;182(1):200-225.e35. <a href="doi:10.1016/j.cell.2020.06.013" class="uri">doi:10.1016/j.cell.2020.06.013</a></p>
+<p>Tsay JJ, Tchou-Wong KM, Greenberg AK, Pass H, Rom WN. Aryl hydrocarbon receptor and lung cancer. Anticancer Res. 2013 Apr;33(4):1247-56. PMID: 23564762; PMCID: PMC3771678.</p>
+<p>Zhu K, Meng Q, Zhang Z, Yi T, He Y, Zheng J and Lei W: Aryl hydrocarbon receptor pathway: Role, regulation and intervention in atherosclerosis therapy (Review). Mol Med Rep 20: 4763-4773, 2019</p>
+<p>Manzella CR, Ackerman M, Singhal M, et al. Serotonin Modulates AhR Activation by Interfering with CYP1A1-Mediated Clearance of AhR Ligands. Cell Physiol Biochem. 2020;54(1):126-141. <a href="doi:10.33594/000000209" class="uri">doi:10.33594/000000209</a></p>
 </div>
 
 
