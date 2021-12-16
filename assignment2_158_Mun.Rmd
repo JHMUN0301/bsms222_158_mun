@@ -1,0 +1,954 @@
+---
+title: "Characteristics of Ahr downstream genes at transcriptomic/proteomic level"
+output: 
+  html_document: 
+    toc: yes
+---
+2020250158 문진홍
+BSMS222 Biostatistics
+2021.12.17
+
+# I. Introduction
+
+Ahr is a transcription factor that activates xenobiotic metabolism, histone modification(an important step in DNA methylation), and ultimately, tumorigenesis(Tsay et al.(2013)). It is known to be activated by some ligands, including PAHs and dioxins from cigarette smoking. At its inactivate state, without ligand binding, Ahr is bound with HSP90, AIP, and PTGE3. When dioxin binds to Ahr, other 3 components dissociates and let Ahr bind with ARNT. Ahr-ARNT complex then translocates to nucleus and promote transcription of several genes, such as CYP1A1, CYP1B1, etc. The effect of Ahr pathway and its outputs on tumorigenesis is not fully described yet, and many studies are carried out these days to find out the mechanism and utilize for treatments and diagnosis.
+In our topic paper(Chen et al.(2020)), Ahr pathway was introduced as contributor to carcinogenesis, related to PAH, and somehow induce anti-apoptosis.
+Since there was little information about Ahr pathway in the paper, looking for pathway's functions and characteristics seemed to be a good topic for this portfolio. It was difficult to see the activation of Ahr and related genes through conformational change by ligand binding with affordable data, expression of Ahr downstream genes at proteomic and transcriptomic level and see the difference among patient's age, gender, ethnicity, etc. was chosen to be visualized.
+
+
+# II. Visualization
+
+## II-1 Loading/Manipulating data
+
+
+To see the characteristics of Ahr downstream genes among patients, comparing cohort from the paper with other cohort would be helpful. So this portfolio used tables from Chen et al.(2020), which has informations about Taiwan cohort(henceforth TW), and CPTAC cohort analyzed in Gillette et al.(2020), which cover geographically diverse population(henceforth C; CPTAC). Tables for patients' clinical data(TW-S1A, C-S1A), SNV informations(TW-S1C, C-S1A), gene expressions at transcriptomic level(TW-S1D, C-S2D), and gene expressions at proteomic level(TW-S1E, C-S3A) were used. Data from Chen et al.(2020) had Log2T/N values, which represent the relative gene expression of tumors but Gillette et al.(2020) had Log2 values of expression for tumors and NATs, separately. So Log2T/N value calculation was needed.
+
+
+```{r}
+#load packages I need
+library(tibble)
+library(dplyr)
+library(ggplot2)
+library(ggridges)
+library(dslabs)
+library(readxl)
+library(cowplot)
+library(RColorBrewer)
+library(tidyverse)
+library(ggside)
+library(janitor)
+library(ggpubr)
+library(ggthemes)
+
+#load data
+
+S1A <- as.data.frame(read_excel("C:/Users/user/Desktop/github/bsms222_158_mun//1-s2.0-S0092867420307431-mmc1.xlsx", sheet = "Table S1A_clinical_103patient"))
+
+S1D <- as.data.frame(read_excel("C:/Users/user/Desktop/github/bsms222_158_mun//1-s2.0-S0092867420307431-mmc1.xlsx", sheet = "Table S1D_transcriptome_log2TN"))
+
+S1E <- as.data.frame(read_excel("C:/Users/user/Desktop/github/bsms222_158_mun//1-s2.0-S0092867420307431-mmc1.xlsx", sheet = "Table S1E_ProteomeLog2TN", na = "NA"))
+
+CS1C <- as.data.frame(read_excel("C:/Users/user/Desktop/github/bsms222_158_mun//1-s2.0-S0092867420307431-mmc1.xlsx", sheet = "Table S1C_SNV", na = "NA"))
+
+CS1A <- as.data.frame(read_excel("C:/Users/user/Desktop/github/bsms222_158_mun//mmc1.xlsx", sheet = "Annotions_S1A", na = "NA"))
+
+CS2D <- as.data.frame(read_excel("C:/Users/user/Desktop/github/bsms222_158_mun//mmc2.xlsx", sheet = "Table S2D", na = "NA"))
+
+
+CS3A <- as.data.frame(read_excel("C:/Users/user/Desktop/github/bsms222_158_mun//mmc3.xlsx", sheet = "Table S3A", na = "NA"))
+
+#Make data tidy & usable
+
+S1A <- S1A %>% 
+  rename("variable" = ID)
+
+CS1C <- CS1C %>%
+  row_to_names(row_number = 1) %>%
+  subset(select = -c(`COUNT`, `%`)) %>%
+  pivot_longer(!Gene,
+               names_to = "variable",
+               values_to = "SNV")
+
+S1D <- subset(S1D, select = -c(ensembl_gene_id, Median)) %>%
+  pivot_longer(!gene, 
+               names_to = "variable",
+               values_to = "value")
+
+S1E <- subset(S1E, select = -c(Accession, Protein)) %>%
+  pivot_longer(!Gene,
+               names_to = "variable",
+               values_to = "value") %>%
+  rename("gene" = "Gene")
+
+CS1A <- CS1A %>%
+  rename("variable" = "Participant")
+
+CS2D <- CS2D %>%
+  subset(select = -c(`...2`, `...3`, `...4`, `...5`, `...6`)) %>%
+  row_to_names(row_number = 2, remove_rows_above = TRUE) %>%
+  slice(-c(1:68)) %>%
+  pivot_longer(!id,
+               names_to = "variable",
+               values_to = "log2value") %>%
+  rename("gene" = "id")
+
+CS3A <- CS3A %>%
+  subset(select = -c(`...2`, `...4`, `#1.3`, `...5`, `...6`, `...7`, `...8`, `...9`, `...10`, `...11`, `...12`, `...13`, `...14`, `...15`, `...16`, `...17`)) %>%
+  row_to_names(row_number = 2, remove_rows_above = TRUE) %>%
+  slice(-c(1:16)) %>%
+  pivot_longer(!geneSymbol,
+               names_to = "variable",
+               values_to = "log2value") %>%
+  rename("gene" = "geneSymbol")
+
+```
+
+## II-2 Figure 1
+
+Figure 1 will be density_ridges plot for expression of Ahr dowstream genes at transcriptomic/proteomic level. Overall expression was shown by density graph. Alongside, I drew expression plots with 4 categories, so that the difference between nonsmoker and smoker, male and female can be shown. TW cohort was divided into "Young(<= 60) Nonsmoker Female"(A), "Old(> 60) Nonsmoker Female"(B), "Ex/Current Smoker Male"(C), "Nonsmoker Male"(D). CPTAC was divided into "Young Nonsmoker Female", "Old Nonsmoker Female", "Ex/Current Smoker Female", "Ex/Current Smoker Male". The categories were I used 'facet_grid' to describe the expressions separated by level and patients' characteristics, and used scale_fill_gradient_2 to fill the density plots with red to blue color, which makes the color change more noticable. Also, I drew a vertical line at x=0 by geom_vline to make it easier to see whether the expression is showing the tendency of higher expression or lower expression, compared to NATs. geom_point on x axis is  included to help the viewers to see the distribution and density more easily, and it can show values that did not draw a density plot because of small number. At the end, I used plot_grid from cowplot to bring all the plots I drew together.
+
+```{r}
+#Make dataframe with patients' clinical data and Ahr downstream genes for Ahr downstream genes
+de <-S1E %>%
+  filter(gene %in% c("CYP1A1", "CYP1B1", "GSTA1", "CDA"))
+de <- merge(S1A, de, by = "variable") %>%
+  mutate(level = "Proteome")
+dd <- S1D %>%
+  filter(gene %in% c("CYP1A1", "CYP1B1", "GSTA1", "CDA"))
+dd <- merge(S1A, dd, by = "variable") %>%
+  mutate(level = "Transcriptome")
+TWDownstream_DE <- rbind(dd, de)
+
+#Draw plot for total(TW)
+
+TWDownstream_DE$level <- factor(TWDownstream_DE$level, levels=c("Transcriptome", "Proteome"))
+TWDownstream_DE$gene <- factor(TWDownstream_DE$gene, levels=c("CYP1A1", "CYP1B1", "CDA", "GSTA1"))
+
+Total_downstream <- TWDownstream_DE %>%
+  filter(gene %in% c("CYP1A1", "CYP1B1", "GSTA1", "CDA")) %>%
+  ggplot(aes(value, gene, fill = stat(x))) +
+  geom_density_ridges_gradient() +
+  scale_fill_gradient2(high = "red", mid = "white", low = "blue") +
+  geom_point(aes(col = stat(x))) +
+  scale_color_gradient2(high = "red", mid = "gray90", low = "blue4") +
+  guides(color = "none", fill = "none") +
+  scale_x_continuous(limits = c(-8, 8)) +
+  theme_ridges() +
+  geom_vline(xintercept = 0, col = "black", linetype = "dashed") +
+  labs(x = 'Log2T/N',
+       y = 'Ahr downstream genes',
+       fill = 'Log2 \n T/N',
+       title = "",
+       subtitle = "TW cohort - total") +
+  theme(axis.text.x = element_text(size = 9, face  = "bold"),
+        axis.text.y = element_text(size = 13),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 8),
+        axis.title.x = element_text(size = 11, hjust = 0.5),
+        axis.title.y = element_text(size = 17, hjust = 0.5),
+        plot.subtitle = element_text(color = "gray40", face = "italic")) +
+  geom_vline(xintercept = 0, col = "black", linetype = "dashed") +
+  facet_wrap(~level)
+
+#Draw plot with category(TW)
+
+Categorized_downstream <- TWDownstream_DE %>%
+  mutate(class = case_when(
+    Gender == "Female" & `Smoking Status` == "Nonsmoke" & Age <= 60 ~ "A",
+    Gender == "Female" & `Smoking Status` == "Nonsmoke" & Age >= 60 ~ "B",
+    Gender == "Male" & `Smoking Status` %in% c("Current_Smoker", "Ex-smoker") ~ "C",
+    Gender == "Male" & `Smoking Status` == "Nonsmoke" ~ "D"
+  )) %>%
+  filter(gene %in% c("CYP1A1", "CYP1B1", "GSTA1", "CDA")) %>%
+  ggplot(aes(value, gene, fill = stat(x))) +
+  geom_density_ridges_gradient() +
+  scale_fill_gradient2(high = "red", mid = "white", low = "blue") +
+  geom_point(aes(col = stat(x))) +
+  scale_color_gradient2(high = "red", mid = "gray90", low = "blue4") +
+  guides(color = "none") +
+  scale_x_continuous(limits = c(-8, 8)) +
+  theme_ridges() +
+  labs(x = 'Log2T/N',
+       y = '',
+       fill = 'Log2 \n T/N',
+       title = "",
+       subtitle = "TW cohort - categorized by patients",
+       caption = "A = Young(<=60) Nonsmoker Female / B = Old(>60) Nonsmoker Female \n C = Ex/Current Smoker Male / D = Nonsmoker Male") +
+  theme(axis.text.x = element_text(size = 9, face  = "bold"),
+        axis.text.y = element_text(size = 13),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 8),
+        axis.title.x = element_text(size = 11, hjust = 0.5),
+        axis.title.y = element_text(size = 17, vjust = 0.5),
+        plot.caption = element_text(size = 10, face = "italic", hjust = 0),
+        plot.subtitle = element_text(color = "gray40", face = "italic")) +
+  geom_vline(xintercept = 0, col = "black", linetype = "dashed") +
+  facet_grid(level~class)
+
+#Bring together and add title by plot_grid
+
+plot_row <- plot_grid(Total_downstream, Categorized_downstream, labels = c("A", "B"))
+title <- ggdraw() +
+  draw_label(
+    "Figure 1 - Expression of Ahr downstream genes at transcriptomic/proteomic level",
+    fontface = "bold",
+    x = 0,
+    hjust = 0,
+    size = 20
+  ) +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.margin = margin(0, 0, 0, 7))
+AHR_downstream <- plot_grid(title, plot_row, ncol = 1, rel_heights = c(0.1,1))
+
+#Calculating Log2T/N
+
+DST <- CS2D %>%
+  filter(gene %in% c("CYP1A1", "CYP1B1", "GSTA1", "CDA")) %>%
+  rename("Sample.ID" = "variable")
+DST <- merge(CS1A, DST, by = "Sample.ID") %>%
+  mutate(level = "Transcriptome")
+
+DSP <- CS3A %>%
+  filter(gene %in% c("CYP1A1", "CYP1B1", "GSTA1", "CDA")) %>%
+  rename("Sample.ID" = "variable")
+DSP <- merge(CS1A, DSP, by = "Sample.ID") %>%
+  mutate(level = "Proteome")
+
+CDownstream <- rbind(DST, DSP) %>%
+  subset(select = c(Sample.ID, variable, Type, Smoking.Status, Age, Gender, Stage, Region.of.Origin, Ethnicity, TP53.mutation, EGFR.mutation, gene, log2value, level)) %>%
+  slice(-c(1673:1688, 829:844))
+
+NAT <- CDownstream %>%
+  filter(Type == "NAT") %>%
+  subset(select = c("Sample.ID", "variable", "gene", "log2value", "level"))
+Tumor <- CDownstream %>%
+  filter(Type == "Tumor", !(variable %in% c("C3L-01862", "C3N-00294", "C3N-01074", "C3N-01842", "C3N-02422")))
+CAHRdownstream <- merge(Tumor, NAT, by = c("variable", "gene", "level")) %>%
+  rename("Tumor.Sample.ID" = "Sample.ID.x", "NAT.Sample.ID" = "Sample.ID.y", "Tumor.value" = "log2value.x", "NAT.value" = "log2value.y")
+
+CAHRdownstream$Tumor.value <- as.numeric(CAHRdownstream$Tumor.value)
+CAHRdownstream$NAT.value <- as.numeric(CAHRdownstream$NAT.value)
+
+
+CAHRdownstream <- CAHRdownstream %>%
+    mutate(logvalue = Tumor.value - NAT.value)
+
+#Draw plot for total(C)
+
+CAHRdownstream$level <- factor(CAHRdownstream$level, levels=c("Transcriptome", "Proteome"))
+CAHRdownstream$gene <- factor(CAHRdownstream$gene, levels=c("CYP1A1", "CYP1B1", "CDA", "GSTA1"))
+
+C_total <- CAHRdownstream %>%
+  ggplot(aes(logvalue, gene, fill = stat(x))) +
+  geom_density_ridges_gradient() +
+  scale_fill_gradient2(high = "red", mid = "white", low = "blue") +
+  geom_point(aes(col = stat(x))) +
+  scale_color_gradient2(high = "red", mid = "gray90", low = "blue4") +
+  guides(color = "none", fill = "none") +
+  scale_x_continuous(limits = c(-8, 8)) +
+  theme_ridges() +
+  geom_vline(xintercept = 0, col = "black", linetype = "dashed") +
+  labs(x = 'Log2T/N',
+       y = 'Ahr downstream genes',
+       fill = 'Log2 \n T/N',
+       title = "",
+       subtitle = "CPTAC cohort - total") +
+  theme(axis.text.x = element_text(size = 9, face  = "bold"),
+        axis.text.y = element_text(size = 13),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 8),
+        axis.title.x = element_text(size = 11, hjust = 0.5),
+        axis.title.y = element_text(size = 17, hjust = 0.5),
+        plot.subtitle = element_text(color = "gray40", face = "italic")) +
+  geom_vline(xintercept = 0, col = "black", linetype = "dashed") +
+  facet_wrap(~level)
+
+#Draw plot with category(C)
+
+C_categorized <- CAHRdownstream %>%
+  mutate(class = case_when(
+    Gender == "female" & Smoking.Status == "non-smoker" & Age <= 60 ~ "A",
+    Gender == "female" & Smoking.Status == "non-smoker" & Age >= 60 ~ "B",
+    Gender == "female" & Smoking.Status == "smoker" ~ "C",
+    Gender == "male" & Smoking.Status == "smoker" ~ "D"
+  )) %>%
+  filter(!is.na(class)) %>%
+  ggplot(aes(logvalue, gene, fill = stat(x))) +
+  geom_density_ridges_gradient() +
+  scale_fill_gradient2(high = "red", mid = "white", low = "blue") +
+  geom_point(aes(col = stat(x))) +
+  scale_color_gradient2(high = "red", mid = "gray90", low = "blue4") +
+  guides(color = "none") +
+  scale_x_continuous(limits = c(-8, 8)) +
+  theme_ridges() +
+  labs(x = 'Log2T/N',
+       y = '',
+       fill = 'Log2 \n T/N',
+       title = "",
+       subtitle = "CPTAC cohort - categorized by patients",
+       caption = "A = Young(<=60) Nonsmoker Female / B = Old(>60) Nonsmoker Female \n  C = Ex/Current Smoker Female / D = Ex/Current smoker Male") +
+  theme(axis.text.x = element_text(size = 9, face  = "bold"),
+        axis.text.y = element_text(size = 13),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 8),
+        axis.title.x = element_text(size = 11, hjust = 0.5),
+        axis.title.y = element_text(size = 17, vjust = 0.5),
+        plot.caption = element_text(size = 10, face = "italic", hjust = 0),
+        plot.subtitle = element_text(color = "gray40", face = "italic")) +
+  geom_vline(xintercept = 0, col = "black", linetype = "dashed") +
+  facet_grid(level~class)
+
+#Bring together(C)
+
+C_AHR_downstream <- plot_grid(C_total, C_categorized, labels = c("C", "D"))
+
+#Bring all 4 plots together
+
+expression_TW_CPTAC <- plot_grid(AHR_downstream, C_AHR_downstream, ncol = 1)
+```
+
+After making the plots above, in CPTAC cohort, I noticed that distribution of expression looked quite bimodal in GSTA1 gene at proteomic level. I made an assumption that it would be because of difference between Asians and non-Asians, since TW cohort showed high expression tendency. So I drew another density plot for that and a boxplot that helps to see the difference between Asian and non-Asian.
+
+```{r}
+#density plot for GSTA1(Asian vs Non-Asian)
+#regionoforigin으로 바꾸자
+dens <- CAHRdownstream %>%
+  mutate(region = case_when(
+    Region.of.Origin == "asian" ~ "Asian",
+    TRUE ~ "Non-Asian"
+  )) %>%
+  filter(level == "Proteome", gene == "GSTA1") %>%
+  ggplot(aes(logvalue, gene, fill = stat(x))) +
+  geom_density_ridges_gradient() +
+  scale_fill_gradient2(high = "red", mid = "white", low = "blue") +
+  geom_point(aes(col = stat(x))) +
+  scale_color_gradient2(high = "red", mid = "gray90", low = "blue4") +
+  guides(color = "none") +
+  scale_x_continuous(limits = c(-8, 8)) +
+  theme_ridges() +
+  labs(x = 'Log2T/N',
+       y = '',
+       fill = 'Log2 \n T/N',
+       title = "",
+       subtitle = "GSTA1 expression(CPTAC cohort, proteomic level)") +
+  theme(axis.text.x = element_text(size = 9, face  = "bold"),
+        axis.text.y = element_text(size = 13),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 8),
+        axis.title.x = element_text(size = 11, hjust = 0.5),
+        axis.title.y = element_text(size = 17, vjust = 0.5),
+        plot.subtitle = element_text(color = "gray40", face = "italic")) +
+  geom_vline(xintercept = 0, col = "black", linetype = "dashed") +
+  facet_grid(Gender~region)
+
+#Draw boxplot for GSTA1 expression of Asian/Non-Asian males
+
+box <- CAHRdownstream %>%
+  mutate(region = case_when(
+    Region.of.Origin == "asian" ~ "Asian",
+    TRUE ~ "Non-Asian"
+  )) %>%
+  filter(region %in% c("Non-Asian", "Asian"), Gender == "male") %>%
+  filter(level == "Proteome", gene == "GSTA1") %>%
+  ggplot(aes(x = region, y = logvalue)) +
+  geom_boxplot(aes(fill = region), width = 0.3, alpha = 0.7) +
+  scale_fill_manual(values = c("dodgerblue4", "firebrick4")) +
+  geom_jitter(aes(color = region),alpha = 0.4) +
+  scale_color_manual(values = c("dodgerblue4", "firebrick4")) +
+  theme_classic() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(face = "bold", size = 12),
+        axis.title.y = element_text(face = "bold"),
+        axis.title.x = element_blank()) +
+  geom_hline(yintercept = 0, col = "black", linetype = "dashed") +
+  labs(x = "Region",
+       y = "Log2T/N")
+
+#Bring together
+
+GSTA1 <- plot_grid(dens, box, ncol = 2, labels = c("E"))
+
+#Bring all the plots for Ahr downstream expression together
+
+fig1 <- plot_grid(expression_TW_CPTAC, GSTA1, ncol = 1, rel_heights = c(4, 1))
+ggsave("Figure1.pdf", fig1, width = 16, height = 20)
+```
+
+> Figure 1 shows the expressions of Ahr donwstream genes(GSTA1, CDA, CYP1B1, CYP1A1). Plot A and C shows the relative expressions of Ahr downstream genes from TW cohort and CPTAC cohort, respectively. Plot B and D shows the relative expression of Ahr downstream genes from TW cohort and CPTAC cohort, respectively, categorized by patients' age/smoking status/gender. Plot E shows the expression of GSTA1 gene, comparing Asian with Non-Asian, and male with female. The boxplot helps to see the difference between Asian males and non-Asian males clearly.
+The density plots displayed several characters of each genes. In TW cohort, genes showed relatively high gene expression tendency, exept for CYP1A1 gene. CYP1A1 gene showed relatively low expression tendency at every cases. It was unable to see CYP1A1 expression at proteomic level by categories because the amount of data was not enough to compose a density plot. There was no significant difference between patient categories, and the expression tendency mostly followed that of total cohort.
+In CPTAC cohort, overall expression tendency was a little lower than TW cohort. CYP1A1/CDA expression tendency was simillar with TW cohort, but for GSTA1, CPTAC cohort showed much lower expression tendency, with quite bimodal distribution. To look for the cause, I drew density plots just for GSTA1 expression, comparing Asians and non-Asians. The plot showed that Asians, especially Asian males had particularly many cases with lower expression. The boxplot next to it shows the difference of expression tendency among Asian males and non-Asian males.(Figure at the end)
+
+
+
+## II-3 Figure 2
+
+
+Figure 2 will be heatmaps for Ahr downstream genes' expression, with patients' age/smoking status/stage/TP53 mutation/EGFR mutation informations. I used geom_tile to draw the heatmap, and geom_xsidetile for age/smoking status/TP53 mutation/EGFR mutation informations. To put each information in one bar, I made dummy columns for names of each information and filled them by real columns that have the real information. Since I used this uncertified method, I wasn't able to control the legends. So I extracted legends from each information and put it next to the heatmap without legends by plot_grid. 
+```{r}
+#Merge TP53 mutation information to previous dataframe
+
+tp53 <- CS1C %>%
+  filter(Gene == "TP53") %>%
+  mutate(TP53 = case_when(
+    is.na(SNV) ~ "TP53_WT",
+    TRUE ~ "TP53_mutated"
+  )) %>%
+  subset(select = -c(SNV))
+TWDownstream_DE <- merge(TWDownstream_DE, tp53, by = "variable")
+
+#Draw heatmap for TW cohort
+
+TWtile <- TWDownstream_DE %>%
+  mutate(Smoking_Status = "Smoking_Status",
+         EGFR_mutation = "EGFR_mutation",
+         TP53_mutation = ">TP53_mutation",
+         stage = "Stage",
+         age = "Patient_age") %>%
+  mutate(smoke = case_when(
+    `Smoking Status` %in% c("Ex-smoker", "Current_Smoker") ~ ".smoker",
+    TRUE ~ ".non-smoker"
+  )) %>%
+  mutate(EGFR = case_when(
+    EGFR_Status == "WT" ~ "EGFR_WT",
+    TRUE ~ "EGFR_mutated")) %>%
+  mutate(Stage = case_when(
+    Stage == "IA" ~ "=IA",
+    Stage == "IB" ~ "=IB",
+    TRUE ~ ">=II"
+  )) %>%
+  mutate(Age = case_when(
+    Age <=60 ~ "Age_younger",
+    TRUE ~ "Age_older"
+  )) %>%
+  mutate(variable = reorder(variable, value, median)) %>%
+  ggplot(aes(x = variable, y = gene)) +
+  geom_tile(aes(fill = value)) +
+  scale_fill_gradient2(high = "red", mid = "white", low = "blue") +
+  geom_xsidetile(aes(y = Smoking_Status, xfill = smoke)) +
+  geom_xsidetile(aes(y = EGFR_mutation, xfill = EGFR)) +
+  geom_xsidetile(aes(y = TP53_mutation, xfill = TP53)) +
+  geom_xsidetile(aes(y = age, xfill = Age)) +
+  geom_xsidetile(aes(y = stage, xfill = Stage)) +
+  scale_xfill_manual(values = c("darkorange", "darkolivegreen4", "darkslategray1", "deepskyblue2", "deepskyblue4", "wheat3", "wheat1", "mediumorchid4", "mediumorchid1", "black", "floralwhite")) +
+  scale_xsidey_discrete(labels = NULL) +
+  theme_light() +
+  facet_wrap(~level) +
+  labs(title = "Figure 2 - Correlation between EGFR/TP53 mutation and Ahr downstream gene expression",
+       y = "Ahr downstream genes",
+       subtitle = "TW cohort") +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        strip.background = element_rect(fill = "gray88"),
+        axis.title.x = element_blank(),
+        legend.position = "none",
+        strip.text = element_text(size = 15, color = "black"),
+        plot.subtitle = element_text(color = "gray40", face = "italic"))
+
+#Draw heatmap for CPTAC cohort
+
+Ctile <- CAHRdownstream %>%
+  mutate(Smoking_Status = "Smoking_Status",
+         EGFR_mutation = "EGFR_mutation",
+         TP53_mutation = ">TP53_mutation",
+         stage = "Stage",
+         age = "Patient_age") %>%
+  mutate(smoke = case_when(
+    Smoking.Status == "smoker" ~ ".smoker",
+    Smoking.Status == "non-smoker" ~ ".non-smoker"
+  )) %>%
+  mutate(EGFR = case_when(
+    is.na(EGFR.mutation) ~ "EGFR_WT",
+    TRUE ~ "EGFR_mutated")) %>%
+  mutate(TP53 = case_when(
+    is.na(TP53.mutation) ~ "TP53_WT",
+    TRUE ~ "TP53_mutated"
+  )) %>%
+  mutate(Stage = case_when(
+    Stage == "1A" ~ "=IA",
+    Stage == "1B" ~ "=IB",
+    Stage == "1" & is.na(Stage) ~ "NA",
+    TRUE ~ ">=II"
+  )) %>%
+  mutate(Age = case_when(
+    Age <= 60 ~ "Age_younger",
+    TRUE ~ "Age_older"
+  )) %>%
+  filter(!is.na(smoke)) %>%
+  mutate(variable = reorder(variable, logvalue, median)) %>%
+  ggplot(aes(x = variable, y = gene)) +
+  geom_tile(aes(fill = logvalue)) +
+  scale_fill_gradient2(high = "red", mid = "white", low = "blue") +
+  geom_xsidetile(aes(y = Smoking_Status, xfill = smoke)) +
+  geom_xsidetile(aes(y = EGFR_mutation, xfill = EGFR)) +
+  geom_xsidetile(aes(y = TP53_mutation, xfill = TP53)) +
+  geom_xsidetile(aes(y = age, xfill = Age)) +
+  geom_xsidetile(aes(y = stage, xfill = Stage)) +
+  scale_xfill_manual(values = c("darkorange", "darkolivegreen4", "darkslategray1", "deepskyblue2", "deepskyblue4", "wheat3", "wheat1", "mediumorchid4", "mediumorchid1", "black", "floralwhite")) +
+  scale_xsidey_discrete(labels = NULL) +
+  theme_light() +
+  facet_wrap(~level) +
+  labs(y = "Ahr downstream genes",
+       subtitle = "CPTAC cohort") +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        legend.position = "none",
+        strip.background = element_blank(),
+        strip.text = element_blank(),
+        axis.title.x = element_blank(),
+        plot.subtitle = element_text(color = "gray40", face = "italic"))
+
+#Make legends
+
+legend_C <- get_legend(
+  TWDownstream_DE %>%
+    mutate(variable = reorder(variable, value, median)) %>%
+    mutate(Smoke = case_when(
+      `Smoking Status` %in% c("Ex-smoker", "Current_Smoker") ~ ".smoker",
+      TRUE ~ ".non-smoker"
+      )) %>%
+    mutate(Smoking_Status = "Smoking_Status") %>%
+    ggplot() +
+    geom_tile(aes(x = variable, y = Smoking_Status, fill = Smoke)) +
+    scale_fill_manual(values = c("darkorange", "darkolivegreen4")))
+  
+legend_E <- get_legend(
+  TWDownstream_DE %>%
+    mutate(EGFR_mutation = "EGFR_mutation") %>%
+    mutate(EGFR = case_when(
+    EGFR_Status == "WT" ~ "EGFR_WT",
+    TRUE ~ "EGFR_mutated")) %>%
+    mutate(variable = reorder(variable, value, median)) %>%
+    ggplot() +
+    geom_tile(aes(x = variable, y = EGFR_mutation, fill = EGFR)) +
+    scale_fill_manual(values = c("mediumorchid4", "mediumorchid1")))
+
+legend_T <- get_legend(
+  TWDownstream_DE %>%
+    mutate(TP53_mutation = ">TP53_mutation") %>%
+    mutate(variable = reorder(variable, value, median)) %>%
+    ggplot() +
+    geom_tile(aes(x = variable, y = TP53_mutation, fill = TP53)) +
+      scale_fill_manual(values = c("black", "floralwhite")))
+
+legend_S <- get_legend(
+  TWDownstream_DE %>%
+    mutate(Stage = case_when(
+    Stage == "IA" ~ "=IA",
+    Stage == "IB" ~ "=IB",
+    TRUE ~ ">=II"
+  )) %>%
+    mutate(stage = "Stage") %>%
+    ggplot() +
+    geom_tile(aes(x = variable, y = stage, fill = Stage)) +
+    scale_fill_manual(values = c("darkslategray1", "deepskyblue2", "deepskyblue4")))
+
+legend_A <- get_legend(
+  TWDownstream_DE %>%
+    mutate(Age = case_when(
+    Age <= 60 ~ "Age_younger",
+    TRUE ~ "Age_older"
+  )) %>%
+    mutate(age = "Patient_age") %>%
+    ggplot() +
+    geom_tile(aes(x = variable, y = age, fill = Age)) +
+    scale_fill_manual(values = c("wheat3", "wheat1")))
+
+legend_G <- get_legend(
+  TWDownstream_DE %>%
+  mutate(variable = reorder(variable, value, median)) %>%
+  ggplot(aes(x = variable, y = gene)) +
+  geom_tile(aes(fill = value)) +
+  scale_fill_gradient2(high = "red", mid = "white", low = "blue"))
+
+legends <- plot_grid(legend_S, legend_C, legend_A, legend_E, legend_T, legend_G, ncol = 1)
+
+
+
+
+#Bring plots together and put legends inside
+
+TWCtile <- plot_grid(TWtile, Ctile, ncol = 1)
+
+fig2 <- plot_grid(TWCtile, legends, byrow = TRUE, rel_widths = c(6.6,1))
+
+ggsave("Figure2.pdf", fig2, width = 16, height = 12)
+```
+
+> Figure 2 is heatmaps for Ahr downstream gene expression of TW and g cohort at transcriptomic/proteomic level. Most of the TW cohort patients were early stage(IA or IB), nonsmokers, and had some kind of EGFR mutation such as L858R mutation, exon19del muation. For CPTAC cohort's patients, there were much more of them with late stages, smoking history, and TP53 mutations.
+
+
+# III Results & Discussion
+
+
+As you can see from Figure 1, genes except for CYP1A1 showed higher expression tendency. According to other studies, AhR signaling pathway is tightly controlled by an intrinsic negative feedback mechanism. More precisely, AhR ligands facilitate their own degradation by inducing expression and activity of the AhR gene target CYP1A1(Manzella et al(2020)). This can lead to an assumtion that LUAD cells have gone through changes that inhibits CYP1A1 expression to block negtative feedback and let Ahr signaling be activated constantly. TW cohort and CPTAC cohort had low expression of CYP1A1 in common, so this could be the hallmark for LUAD in human being. Study with other cancer types with this subject is needed to confirm this assumption. In CPTAC cohort, tendency of CYP1A1 was similar with TW cohort, but GSTA1, CDA, CYP1B1's expressions seemed to be a bit lower than TW cohort. With CDA and CYP1B1, relative expression at both levels of total cohort formed normal distribution-like graph, while TW cohort displayed biased graph to the right. This could mean that CDA and CYP1B1 expression has nothing to do with LUAD in CPTAC cohort. This is because stochastic phenomenons tend to draw normal distribution. With fig 1E, Asian male had relatively more cases with lower expression. This does not match the observation from fig 1A and B, that TW cohort(Asian) shows higher expression tendency(for both male and female), this may be due to difference between environmental difference between TW cohort Asians and CPTAC cohort Asians, rather than by ethnicity. Asian patients of CPTAC cohort were from China or Vietnam, so there could be environmetal factors that may be responsible to GSTA1 expression. Further study for finding those environmental factor might be meaningful.
+
+ With figure 2, I looked for correlations between expression and additional information in TW cohort, and there were some correlations, but it was difficult to find significant correlations that might be useful, and large number of NAs made it much more difficult at proteomic level. IA stage of TW cohort patients mostly had high GSTA1 expression at transcriptomic level and did not have TP53 mutation. The correlation between age, TP53 mutation, and GSTA1 expression was visible at CPTAC cohort. Patients with younger age and TP53 mutation showed low expression at both levels, and older patients with no TP53 mutations tended to show higher expression. Other genes had too many NAs or values close to 0, so it was difficult to find correlations. These correlations I found from the plots might contribute to diagnoses or treatments like the findings from Chen et al.(2020), but the quality and certainty is quite different. 
+
+
+# IV Figure 3
+
+
+After reviewing my assignment1 and reading feedbacks from peers, I thought it would be better to check p values for analysis/interpretation done on figure 1 and figure 2, so that I could see if my analysis/interpretations are significant. Box plots for Ahr downstream gene expression were drawn and p values(Whether the difference between groups are significant) were added by stat_compare_means.
+```{r}
+#A- Similarity among groups of TW/CPTAC cohort for total/transcriptome/proteome level
+
+TWABCD <- TWDownstream_DE %>%
+  mutate(class = case_when(
+    Gender == "Female" & `Smoking Status` == "Nonsmoke" & Age <= 60 ~ "A",
+    Gender == "Female" & `Smoking Status` == "Nonsmoke" & Age >= 60 ~ "B",
+    Gender == "Male" & `Smoking Status` %in% c("Current_Smoker", "Ex-smoker") ~ "C",
+    Gender == "Male" & `Smoking Status` == "Nonsmoke" ~ "D"
+  )) %>%
+  filter(gene %in% c("CYP1A1", "CYP1B1", "GSTA1", "CDA"))
+
+c <- list(c("A", "B"),  c("A", "C"), c("A", "D"), c("B", "C"), c("C", "D"),  c("B", "D"))
+
+p1 <- TWABCD %>%
+  ggplot(aes(class, value)) +
+  geom_boxplot(aes(fill = class), alpha = 0.85) +
+  geom_jitter(aes(col = class), alpha = 0.15) +
+  stat_compare_means(comparisons = c, label.y = c(1.5, 2.5, 3.5, 5, 6, 7.5)) +
+  stat_compare_means(label.y = 10) +
+  labs(y = "Log2T/N",
+       title = "A",
+       subtitle = "TW cohort") +
+  theme(legend.position = "none",
+        axis.title.x = element_blank(),
+        plot.subtitle = element_text(color = "gray40", face = "italic"),
+        axis.text.x = element_text(face = "bold", size = 10),
+        axis.title.y = element_text(face = "bold"))
+  
+p2 <- TWABCD %>%
+  ggplot(aes(class, value)) +
+  geom_boxplot(aes(fill = class), alpha = 0.85) +
+  geom_jitter(aes(col = class), alpha = 0.15) +
+  stat_compare_means(comparisons = c, label.y = c(1.5, 2.5, 3.5, 5, 6, 7.5)) +
+  stat_compare_means(label.y = 10) +
+  facet_wrap(~level) +
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.x = element_text(face = "bold", size = 10)) +
+  labs(y = "Log2T/N",
+       title = " ")
+
+CPTACABCD <- CAHRdownstream %>%
+  mutate(class = case_when(
+    Gender == "female" & Smoking.Status == "non-smoker" & Age <= 60 ~ "A",
+    Gender == "female" & Smoking.Status == "non-smoker" & Age >= 60 ~ "B",
+    Gender == "female" & Smoking.Status == "smoker" ~ "C",
+    Gender == "male" & Smoking.Status == "smoker" ~ "D"
+  ))
+
+CAHRdownstream$level <- factor(CAHRdownstream$level, levels=c("Transcriptome", "Proteome"))
+
+p3 <- CPTACABCD %>%
+  filter(!is.na(class)) %>%
+  ggplot(aes(class, logvalue)) +
+  geom_boxplot(aes(fill = class), alpha = 0.85) +
+  geom_jitter(aes(col = class), alpha = 0.15) +
+  stat_compare_means(comparisons = c, label.y = c(1.5, 2.5, 3.5, 5, 6, 7.5)) +
+  stat_compare_means(label.y = 9.8) +
+  labs(y = "Log2T/N",
+       subtitle = "CPTAC cohort") +
+  theme(legend.position = "none",
+        plot.subtitle = element_text(color = "gray40", face = "italic"),
+        axis.text.x = element_text(face = "bold", size = 10),
+        axis.title.y = element_text(face = "bold"))
+
+p4 <- CPTACABCD %>%
+  filter(!is.na(class)) %>%
+  ggplot(aes(class, logvalue)) +
+  geom_boxplot(aes(fill = class), alpha = 0.85) +
+  geom_jitter(aes(col = class), alpha = 0.15) +
+  stat_compare_means(comparisons = c, label.y = c(1.5, 2.5, 3.5, 5, 6, 7.5)) +
+  stat_compare_means(label.y = 9) +
+  facet_wrap(~level) +
+  labs(y = "Log2T/N") +
+  theme(axis.title.y = element_blank(),
+        axis.text.x = element_text(face = "bold", size = 10))
+
+t <- ggdraw() +
+  draw_label(
+    "Figure 3A - P-values for Ahr downstream genes' expression between patient groups",
+    fontface = "bold",
+    x = 0,
+    hjust = 0,
+    size = 20
+  ) +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.margin = margin(0, 0, 0, 7))
+
+TWp <- plot_grid(p1, p2, rel_widths = c(1, 1.5))
+CPTACp <- plot_grid(p3, p4, rel_widths = c(1, 1.5))
+TWCPTACp <- plot_grid(TWp, CPTACp, ncol = 1)
+figure3_A <- plot_grid(t, TWCPTACp, ncol = 1, rel_heights = c(0.1, 1))
+
+#B- Significance for difference between Asian and non-Asian patients of CPTAC cohort
+
+asianvsnonasian <- CAHRdownstream %>%
+  mutate(region = case_when(
+    Region.of.Origin == "asian" ~ "Asian",
+    TRUE ~ "Non-Asian"
+  )) %>%
+  filter(region %in% c("Non-Asian", "Asian"), Gender == "male")
+
+figure3_B <- asianvsnonasian %>%
+  filter(gene == "GSTA1") %>%
+  ggplot(aes(x = region, y = logvalue)) +
+  geom_boxplot(aes(fill = region), width = 0.3, alpha = 0.9) +
+  scale_fill_manual(values = c("royalblue3", "firebrick3")) +
+  geom_jitter(aes(color = region),alpha = 0.4) +
+  scale_color_manual(values = c("royalblue3", "firebrick3")) +
+  theme(legend.position = "none",
+        axis.text.x = element_text(face = "bold", size = 12),
+        axis.title.y = element_text(face = "bold"),
+        axis.title.x = element_blank()) +
+  geom_hline(yintercept = 0, col = "black", linetype = "dashed") +
+  labs(x = "Region",
+       y = "Log2T/N",
+       title = "B") +
+  stat_compare_means(label.y = 8) +
+  facet_grid(gene~level)
+
+#C- Significance for relationships I suggested from Figure 2
+
+##Relationship among TP53 mutation and GSTA1 expression in TW cohort
+
+C1 <- TWDownstream_DE %>%
+  filter(gene == "GSTA1") %>%
+  ggplot(aes(x = TP53, y = value)) +
+  geom_boxplot(aes(fill = TP53), width = 0.3, alpha = 0.9) +
+  scale_fill_manual(values = c("goldenrod2", "darkgreen")) +
+  geom_jitter(aes(color = TP53),alpha = 0.4) +
+  scale_color_manual(values = c("goldenrod2", "darkgreen")) +
+  theme(legend.position = "none",
+        axis.text.x = element_text(face = "bold", size = 12),
+        axis.title.y = element_text(face = "bold"),
+        axis.title.x = element_blank()) +
+  geom_hline(yintercept = 0, col = "black", linetype = "dashed") +
+  labs(x = "TP53",
+       y = "Log2T/N",
+       title = "C",
+       subtitle = "TW cohort") +
+  stat_compare_means(label.y = 8) +
+  theme(plot.subtitle = element_text(color = "gray40", face = "italic")) +
+  facet_grid(gene~.)
+
+C2 <- TWDownstream_DE %>%
+  filter(gene == "GSTA1") %>%
+  ggplot(aes(x = TP53, y = value)) +
+  geom_boxplot(aes(fill = TP53), width = 0.3, alpha = 0.9) +
+  scale_fill_manual(values = c("goldenrod2", "darkgreen")) +
+  geom_jitter(aes(color = TP53),alpha = 0.4) +
+  scale_color_manual(values = c("goldenrod2", "darkgreen")) +
+  theme(legend.position = "none",
+        axis.text.x = element_text(face = "bold", size = 12),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  geom_hline(yintercept = 0, col = "black", linetype = "dashed") +
+  labs(x = "TP53",
+       y = "Log2T/N",
+       title = " ") +
+  stat_compare_means(label.y = 8) +
+  facet_grid(gene~level) +
+  theme(axis.title.y = element_blank())
+
+##Relationship among TP53 mutation and GSTA1 expression in CPTAC cohort
+
+C3 <- CAHRdownstream %>%
+  mutate(TP53 = case_when(
+    is.na(TP53.mutation) ~ "TP53_WT",
+    TRUE ~ "TP53_mutated"
+  )) %>%
+  filter(gene == "GSTA1") %>%
+  ggplot(aes(x = TP53, y = logvalue)) +
+  geom_boxplot(aes(fill = TP53), width = 0.3, alpha = 0.9) +
+  scale_fill_manual(values = c("goldenrod2", "darkgreen")) +
+  geom_jitter(aes(color = TP53),alpha = 0.4) +
+  scale_color_manual(values = c("goldenrod2", "darkgreen")) +
+  theme(legend.position = "none",
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(face = "bold", size = 12),
+        axis.title.y = element_text(face = "bold")) +
+  geom_hline(yintercept = 0, col = "black", linetype = "dashed") +
+  labs(x = "TP53",
+       y = "Log2T/N",
+       subtitle = "CPTAC cohort") +
+  stat_compare_means(label.y = 8) +
+  theme(plot.subtitle = element_text(color = "gray40", face = "italic")) +
+  facet_grid(gene~.)
+
+C4 <- CAHRdownstream %>%
+  mutate(TP53 = case_when(
+    is.na(TP53.mutation) ~ "TP53_WT",
+    TRUE ~ "TP53_mutated"
+  )) %>%
+  filter(gene == "GSTA1") %>%
+  ggplot(aes(x = TP53, y = logvalue)) +
+  geom_boxplot(aes(fill = TP53), width = 0.3, alpha = 0.9) +
+  scale_fill_manual(values = c("goldenrod2", "darkgreen")) +
+  geom_jitter(aes(color = TP53),alpha = 0.4) +
+  scale_color_manual(values = c("goldenrod2", "darkgreen")) +
+  theme(legend.position = "none",
+        axis.text.x = element_text(face = "bold", size = 12),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  geom_hline(yintercept = 0, col = "black", linetype = "dashed") +
+  labs(x = "TP53",
+       y = "Log2T/N",
+       title = " ") +
+  stat_compare_means(label.y = 8) +
+  facet_grid(gene~level)
+
+figure3_C <- plot_grid(C1, C2, C3, C4, ncol = 2)
+
+#D- Additional significant relationships found by p values
+
+##TW- Stage IA vs II>= -> CYP1B1
+
+cc <- list(c("=IA", "=IB"), c("=IA", ">=II"), c("=IB", ">=II"))
+
+D1 <- TWDownstream_DE %>%
+  filter(!is.na(value), gene == "CYP1B1", level == "Proteome") %>%
+  mutate(Stage = case_when(
+    Stage == "IA" ~ "=IA",
+    Stage == "IB" ~ "=IB",
+    TRUE ~ ">=II"
+  )) %>%
+  ggplot(aes(x = Stage, y = value)) +
+  geom_boxplot(aes(fill = Stage), width = 0.3, alpha = 0.9)+
+  geom_jitter(aes(color = Stage),alpha = 0.4) +
+  theme(legend.position = "none",
+        axis.text.x = element_text(size = 10),
+        axis.title.y = element_text(face = "bold"),
+        axis.title.x = element_blank()) +
+  geom_hline(yintercept = 0, col = "black", linetype = "dashed") +
+  labs(x = "Stage",
+       y = "Log2T/N",
+       title = "D") +
+  stat_compare_means(comparisons = cc) +
+  stat_compare_means(label.y = 5) +
+  facet_grid(gene~level)
+
+##CPTAC- IA vs IB/II>= -> GSTA1
+
+D2 <- CAHRdownstream %>%
+  filter(Stage != "1", !is.na(Stage), !is.na(logvalue), gene == "GSTA1") %>%
+  mutate(Stage = case_when(
+    Stage == "1A" ~ "=IA",
+    Stage == "1B" ~ "=IB",
+    TRUE ~ ">=II"
+  )) %>%
+  ggplot(aes(x = Stage, y = logvalue)) +
+  geom_boxplot(aes(fill = Stage), width = 0.3, alpha = 0.9)+
+  geom_jitter(aes(color = Stage),alpha = 0.4) +
+  theme(legend.position = "none",
+        axis.text.x = element_text(size = 10),
+        axis.title.y = element_text(face = "bold"),
+        axis.title.x = element_blank()) +
+  geom_hline(yintercept = 0, col = "black", linetype = "dashed") +
+  labs(title = " ",
+       y = "Log2T/N") +
+  stat_compare_means(comparisons = cc) +
+  stat_compare_means(label.y = 8) +
+  facet_grid(gene~.)
+
+##TW(proteomic level)-  EGFR mutation & CYP1B1
+
+D3 <- TWDownstream_DE %>%
+  filter(!is.na(value), gene == "CYP1B1") %>%
+  mutate(EGFR = case_when(
+    EGFR_Status == "WT" ~ "EGFR_WT",
+    TRUE ~ "EGFR_mutated")) %>%
+  ggplot(aes(x = EGFR, y = value)) +
+  geom_boxplot(aes(fill = EGFR), width = 0.3, alpha = 0.9) +
+  scale_fill_manual(values = c("goldenrod2", "darkgreen")) +
+  geom_jitter(aes(color = EGFR),alpha = 0.4) +
+  scale_color_manual(values = c("goldenrod2", "darkgreen")) +
+  theme(legend.position = "none",
+        axis.text.x = element_text(face = "bold", size = 10),
+        axis.title.y = element_text(face = "bold"),
+        axis.title.x = element_blank()) +
+  geom_hline(yintercept = 0, col = "black", linetype = "dashed") +
+  labs(title = " ",
+       y = "Log2T/N") +
+  stat_compare_means(label.y = 8) +
+  facet_grid(gene~.)
+
+  
+##CPTAC(proteomic level)- EGFR & CDA
+
+D4 <- CAHRdownstream %>%
+  filter(!is.na(logvalue), gene == "CDA") %>%
+  mutate(EGFR = case_when(
+    is.na(EGFR.mutation) ~ "EGFR_WT",
+    TRUE ~ "EGFR_mutated")) %>%
+  ggplot(aes(x = EGFR, y = logvalue)) +
+  geom_boxplot(aes(fill = EGFR), width = 0.3, alpha = 0.9) +
+  scale_fill_manual(values = c("goldenrod2", "darkgreen")) +
+  geom_jitter(aes(color = EGFR),alpha = 0.4) +
+  scale_color_manual(values = c("goldenrod2", "darkgreen")) +
+  theme(legend.position = "none",
+        axis.text.x = element_text(face = "bold", size = 10),
+        axis.title.y = element_text(face = "bold"),
+        axis.title.x = element_blank()) +
+  geom_hline(yintercept = 0, col = "black", linetype = "dashed") +
+  labs(title = " ",
+       y = "Log2T/N") +
+  stat_compare_means(label.y = 8) +
+  facet_grid(gene~.)
+
+##CPTAC(proteomic level)- EGFR & CYP1A1
+
+D5 <- CAHRdownstream %>%
+  filter(!is.na(logvalue), gene == "CYP1A1") %>%
+  mutate(EGFR = case_when(
+    is.na(EGFR.mutation) ~ "EGFR_WT",
+    TRUE ~ "EGFR_mutated")) %>%
+  ggplot(aes(x = EGFR, y = logvalue)) +
+  geom_boxplot(aes(fill = EGFR), width = 0.3, alpha = 0.9) +
+  scale_fill_manual(values = c("goldenrod2", "darkgreen")) +
+  geom_jitter(aes(color = EGFR),alpha = 0.4) +
+  scale_color_manual(values = c("goldenrod2", "darkgreen")) +
+  theme(legend.position = "none",
+        axis.text.x = element_text(face = "bold", size = 10),
+        axis.title.y = element_text(face = "bold"),
+        axis.title.x = element_blank()) +
+  geom_hline(yintercept = 0, col = "black", linetype = "dashed") +
+  labs(title = " ",
+       y = "Log2T/N") +
+  stat_compare_means(label.y = 8) +
+  facet_grid(gene~.)
+
+figure3_D <- plot_grid(D1, D2, D3, D4, D5, nrow = 1)
+
+#Bring all the plots toghter -> Figure 3 
+
+figure3 <- plot_grid(figure3_A, figure3_B, figure3_C, figure3_D, ncol = 1, rel_heights = c(1, 0.7, 1, 1))
+
+ggsave("figure3.pdf", figure3, width = 16, height = 24)
+```
+
+
+
+# V Results & Discussion 2
+
+
+Among 4 categories, both TW cohort and CPTAC cohort had high p values, which indicates similarity between categories for Ahr downstream gene expression(Kruskal-Wallis). TW cohort had higher p value than CPTAC cohort, it's probably because TW cohort consists of single ethnicity but CPTAC cohort does not. The difference between Asian and non-Asian patients were significant(Wilcoxon). This could approve that there's some kind of difference among Asian males and non-Asian males. Contrary to my expectation, there was no significant relationship between TP53 mutation and GSTA1 expression in TW cohort. On the other hand, CPTAC cohort showed significant relationship between TP53 mutation and GSTA1 expression; patients with TP53 wildtype had relatively higher GSTA1 expression. There were several relationships with p values lower than 0.05, such as CYP1B1 expression-EGFR mutation. However, for all of the analysis, even though the relationships I mentioned above showed significance by p value, but this cannot approve that the hyphothesises are right, since there's not enough data. Further study with sufficient data is needed.
+
+By feedbacks from peers, Some typos are fixed, and legend for colors is added for heatmaps of figure 2. Also, I changed the way of calculating log2T/N with CPTAC data because it was unnecessary to calculate '2^' and divide them, and apply log2 again. Instead, using log2T - log2N was much easier. Finaly, I added explanations for dividing cohorts with 4 categories and why difference between Asian and non-Asian patients might derive from environmental differences.
+
+
+
+# VI References
+
+Yi-Ju Chen, Theodoros I. Roumeliotis, Ya-Hsuan Chang,..., 
+Proteogenomics of Non-smoking Lung Cancer in East Asia Delineates Molecular Signatures of Pathogenesis and Progression, Cell, Volume 182, Issue 1, 2020, Pages 226-244.e17
+
+Gillette MA, Satpathy S, Cao S, et al. Proteogenomic Characterization Reveals Therapeutic Vulnerabilities in Lung Adenocarcinoma. Cell. 2020;182(1):200-225.e35. doi:10.1016/j.cell.2020.06.013
+
+Tsay JJ, Tchou-Wong KM, Greenberg AK, Pass H, Rom WN. Aryl hydrocarbon receptor and lung cancer. Anticancer Res. 2013 Apr;33(4):1247-56. PMID: 23564762; PMCID: PMC3771678.
+
+Zhu K, Meng Q, Zhang Z, Yi T, He Y, Zheng J and Lei W: Aryl hydrocarbon receptor pathway: Role, regulation and intervention in atherosclerosis therapy (Review). Mol Med Rep 20: 4763-4773, 2019
+
+Manzella CR, Ackerman M, Singhal M, et al. Serotonin Modulates AhR Activation by Interfering with CYP1A1-Mediated Clearance of AhR Ligands. Cell Physiol Biochem. 2020;54(1):126-141. doi:10.33594/000000209
+
