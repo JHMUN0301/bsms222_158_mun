@@ -167,23 +167,10 @@ pre code {
 
 </div>
 
-<div id="TOC">
-<ul>
-<li><a href="#i.-introduction">I. Introduction</a></li>
-<li><a href="#ii.-visualization">II. Visualization</a>
-<ul>
-<li><a href="#ii-1-loadingmanipulating-data">II-1 Loading/Manipulating data</a></li>
-<li><a href="#ii-2-figure-1">II-2 Figure 1</a></li>
-<li><a href="#ii-3-figure-2">II-3 Figure 2</a></li>
-</ul></li>
-<li><a href="#iii-results-discussion">III Results &amp; Discussion</a></li>
-<li><a href="#iv-figure-3">IV Figure 3</a></li>
-<li><a href="#v-results-discussion-2">V Results &amp; Discussion 2</a></li>
-<li><a href="#vi-references">VI References</a></li>
-</ul>
-</div>
 
-<p>2020250158 문진홍 BSMS222 Biostatistics 2021.12.17</p>
+<p>2020250158 Mun Jinhong</p>
+<p>BSMS222 Biostatistics</p>
+<p>2021.12.17</p>
 <div id="i.-introduction" class="section level1">
 <h1>I. Introduction</h1>
 <p>Ahr is a transcription factor that activates xenobiotic metabolism, histone modification(an important step in DNA methylation), and ultimately, tumorigenesis(Tsay et al.(2013)). It is known to be activated by some ligands, including PAHs and dioxins from cigarette smoking. At its inactivate state, without ligand binding, Ahr is bound with HSP90, AIP, and PTGE3. When dioxin binds to Ahr, other 3 components dissociates and let Ahr bind with ARNT. Ahr-ARNT complex then translocates to nucleus and promote transcription of several genes, such as CYP1A1, CYP1B1, etc. The effect of Ahr pathway and its outputs on tumorigenesis is not fully described yet, and many studies are carried out these days to find out the mechanism and utilize for treatments and diagnosis. In our topic paper(Chen et al.(2020)), Ahr pathway was introduced as contributor to carcinogenesis, related to PAH, and somehow induce anti-apoptosis. Since there was little information about Ahr pathway in the paper, looking for pathway’s functions and characteristics seemed to be a good topic for this portfolio. It was difficult to see the activation of Ahr and related genes through conformational change by ligand binding with affordable data, expression of Ahr downstream genes at proteomic and transcriptomic level and see the difference among patient’s age, gender, ethnicity, etc. was chosen to be visualized.</p>
@@ -234,12 +221,6 @@ library(tidyverse)</code></pre>
 <pre><code>## The following object is masked from &#39;package:cowplot&#39;:
 ## 
 ##     get_legend</code></pre>
-<pre class="r"><code>library(ggthemes)</code></pre>
-<pre><code>## 
-## 다음의 패키지를 부착합니다: &#39;ggthemes&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:cowplot&#39;:
-## 
-##     theme_map</code></pre>
 <pre class="r"><code>#load data
 
 S1A &lt;- as.data.frame(read_excel(&quot;C:/Users/user/Desktop/github/bsms222_158_mun//1-s2.0-S0092867420307431-mmc1.xlsx&quot;, sheet = &quot;Table S1A_clinical_103patient&quot;))
@@ -543,7 +524,6 @@ C_AHR_downstream &lt;- plot_grid(C_total, C_categorized, labels = c(&quot;C&quot
 expression_TW_CPTAC &lt;- plot_grid(AHR_downstream, C_AHR_downstream, ncol = 1)</code></pre>
 <p>After making the plots above, in CPTAC cohort, I noticed that distribution of expression looked quite bimodal in GSTA1 gene at proteomic level. I made an assumption that it would be because of difference between Asians and non-Asians, since TW cohort showed high expression tendency. So I drew another density plot for that and a boxplot that helps to see the difference between Asian and non-Asian.</p>
 <pre class="r"><code>#density plot for GSTA1(Asian vs Non-Asian)
-#regionoforigin으로 바꾸자
 dens &lt;- CAHRdownstream %&gt;%
   mutate(region = case_when(
     Region.of.Origin == &quot;asian&quot; ~ &quot;Asian&quot;,
@@ -894,7 +874,7 @@ p4 &lt;- CPTACABCD %&gt;%
 
 t &lt;- ggdraw() +
   draw_label(
-    &quot;Figure 3A - P-values for Ahr downstream genes&#39; expression between patient groups&quot;,
+    &quot;Figure 3 - P-values for Ahr downstream genes&#39; expression between patient groups&quot;,
     fontface = &quot;bold&quot;,
     x = 0,
     hjust = 0,
